@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vetera — Know Your Florida Provider</title>
+  <meta name="description" content="Free background lookup on Florida healthcare providers. License, specialty, and public records — in seconds." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="home">
+  <main class="home-main">
+    <div class="home-center">
+      <h1 class="home-logo">Vetera</h1>
+      <p class="home-tag">Know your provider before your appointment.</p>
+
+      <form class="home-search" id="searchForm" autocomplete="off">
+        <input
+          type="text"
+          id="providerName"
+          name="providerName"
+          placeholder="Enter a provider name"
+          required
+          autofocus
+        />
+        <select id="professionFilter" class="profession-filter" aria-label="Filter by profession">
+          <option value="">All professions</option>
+          <option value="Dentist">Dentist (any specialty)</option>
+          <option value="Oral and Maxillofacial Surgery">Oral &amp; Maxillofacial Surgeon</option>
+          <option value="Orthodontics">Orthodontist</option>
+          <option value="Endodontics">Endodontist</option>
+          <option value="Periodontics">Periodontist</option>
+          <option value="Pediatric Dentistry">Pediatric Dentist</option>
+          <option value="Prosthodontics">Prosthodontist</option>
+          <option value="Dental Hygienist">Dental Hygienist</option>
+          <option value="Dental Assistant">Dental Assistant</option>
+          <option value="Plastic Surgery">Plastic Surgeon</option>
+          <option value="Internal Medicine">Physician — Internal Medicine</option>
+          <option value="Family Medicine">Physician — Family Medicine</option>
+        </select>
+        <div class="home-actions">
+          <button type="submit" class="home-btn">Quick Check</button>
+          <button type="button" id="newSearchBtn" class="home-btn home-btn-ghost">← New search</button>
+        </div>
+      </form>
+
+      <p class="home-note">Free. Florida providers. Public records only.</p>
+      <p class="home-example">
+        First time? Try
+        <a href="#" id="exampleSearch" data-name="Daniel Berenstein">Daniel Berenstein</a>
+      </p>
+
+      <div id="searchResults" class="home-results" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <footer class="home-footer">
+    <div>
+      <a href="methodology.html">Methodology</a>
+      <a href="faq.html">FAQ</a>
+      <a href="terms.html">Terms</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="mailto:corrections@vetera.example">Provider Corrections</a>
+    </div>
+    <p class="footer-disclaimer">
+      &copy; 2026 Vetera &middot; Information sourced from U.S. federal and Florida public records &middot;
+      Vetera is independent and not affiliated with any government agency &middot;
+      Not medical or legal advice
+    </p>
+  </footer>
+
+  <script src="data/fl-board-discipline.js"></script>
+  <script src="data/fl-retired.js"></script>
+  <script src="data/oig-fl-exclusions.js"></script>
+  <script src="search.js"></script>
+  <script defer src="analytics.js"></script>
+</body>
+</html>

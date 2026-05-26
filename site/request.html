@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request a Report — Vetera</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo">Vetera</a>
+      <nav>
+        <a href="sample-report.html">Sample</a>
+        <a href="methodology.html">Methodology</a>
+        <a href="faq.html">FAQ</a>
+        <a href="request.html" class="nav-cta active">Get a Report</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="request-page">
+      <div class="container narrow">
+        <h1>Request a Provider Background Report</h1>
+        <p class="lead">
+          Fill out the form below. We'll review and send your report by email,
+          along with a payment link. No charge until you confirm.
+        </p>
+
+        <form id="requestForm" class="request-form">
+          <label>
+            Your Name
+            <input type="text" name="yourName" required />
+          </label>
+
+          <label>
+            Your Email
+            <input type="email" name="yourEmail" required />
+          </label>
+
+          <label>
+            Provider's Full Name
+            <input type="text" name="providerName" required placeholder="e.g. Dr. Marcos Diaz" />
+          </label>
+
+          <label>
+            Provider's City &amp; State (must be Florida for now)
+            <input type="text" name="providerLocation" required placeholder="e.g. Weston, FL" />
+          </label>
+
+          <label>
+            Provider's Profession (if known)
+            <select name="profession">
+              <option value="">— Select —</option>
+              <option>Dentist</option>
+              <option>Oral &amp; Maxillofacial Surgeon</option>
+              <option>Plastic Surgeon</option>
+              <option>Physician (MD)</option>
+              <option>Physician (DO)</option>
+              <option>Other / Not sure</option>
+            </select>
+          </label>
+
+          <label>
+            Report Type
+            <select name="reportType" required id="reportType">
+              <option value="standard">Standard (3–5 days)</option>
+              <option value="rush">Rush (24 hours)</option>
+            </select>
+          </label>
+
+          <label>
+            Anything we should know? (optional)
+            <textarea name="notes" rows="4" placeholder="e.g. I have a procedure scheduled June 20; particularly concerned about sedation history"></textarea>
+          </label>
+
+          <button type="submit" class="btn-primary">Submit Request</button>
+          <p class="form-note">
+            By submitting you agree that the report is for informational use
+            only and does not constitute medical or legal advice. No charge
+            until you confirm by email.
+          </p>
+        </form>
+
+        <div id="formSuccess" class="form-success" style="display:none">
+          <h2>Request received.</h2>
+          <p>
+            Your email client should have opened a draft to send your request.
+            If it didn't, you can email us directly at
+            <strong>hello@vetera.example</strong> with the details above.
+          </p>
+          <p><a href="index.html">&larr; Back to home</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>
+        &copy; 2026 Vetera. All information sourced from public Florida state
+        and federal records. Vetera does not provide medical or legal advice.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Pre-fill from URL params
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type') === 'rush') {
+      document.getElementById('reportType').value = 'rush';
+    }
+    const providerParam = params.get('provider');
+    if (providerParam) {
+      const el = document.querySelector('input[name="providerName"]');
+      if (el) el.value = providerParam;
+    }
+    const locationParam = params.get('location');
+    if (locationParam) {
+      const el = document.querySelector('input[name="providerLocation"]');
+      if (el) el.value = locationParam;
+    }
+
+    // CHANGE THIS to your real email before launch
+    const RECIPIENT_EMAIL = 'hello@vetera.example';
+
+    document.getElementById('requestForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+
+      const subject = encodeURIComponent(
+        'New Vetera Report Request — ' + fd.get('providerName')
+      );
+      const body = encodeURIComponent(
+        'Requester Name: ' + fd.get('yourName') + '\n' +
+        'Requester Email: ' + fd.get('yourEmail') + '\n\n' +
+        'Provider Name: ' + fd.get('providerName') + '\n' +
+        'Provider Location: ' + fd.get('providerLocation') + '\n' +
+        'Profession: ' + (fd.get('profession') || 'Not specified') + '\n' +
+        'Report Type: ' + fd.get('reportType') + '\n\n' +
+        'Notes:\n' + (fd.get('notes') || '(none)')
+      );
+
+      window.location.href =
+        'mailto:' + RECIPIENT_EMAIL + '?subject=' + subject + '&body=' + body;
+
+      document.getElementById('requestForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+    });
+  </script>
+  <script defer src="analytics.js"></script>
+</body>
+</html>
