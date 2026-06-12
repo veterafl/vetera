@@ -43,45 +43,74 @@
   function findOigMatches(oig, firstName, lastName) {
     const l = normName(lastName);
     if (!l) return [];
+    // When only one name term is given, accept it as either first OR last
+    const oneName = !!l && !firstName;
     return oig.filter(function (e) {
-      if (normName(e.last) !== l) return false;
-      return namesMatch(firstName, e.first);
+      if (normName(e.last) === l) {
+        if (oneName) return true;
+        return namesMatch(firstName, e.first);
+      }
+      if (oneName && normName(e.first) === l) return true;
+      return false;
     });
   }
 
   function findFlBoardMatches(flBoard, firstName, lastName) {
     const l = normName(lastName);
     if (!l) return [];
+    const oneName = !!l && !firstName;
     return (flBoard.cases || []).filter(function (c) {
-      // Check primary name
-      if (normName(c.last) === l && namesMatch(firstName, c.first)) {
-        return true;
+      // Primary name match
+      if (normName(c.last) === l) {
+        if (oneName) return true;
+        if (namesMatch(firstName, c.first)) return true;
       }
-      // Check aliases (e.g., a provider who advertises under a different name)
+      if (oneName && normName(c.first) === l) return true;
+      // Aliases
       if (Array.isArray(c.aliases)) {
         for (let i = 0; i < c.aliases.length; i++) {
           const a = c.aliases[i];
-          if (normName(a.last) === l && namesMatch(firstName, a.first)) {
-            return true;
+          if (normName(a.last) === l) {
+            if (oneName) return true;
+            if (namesMatch(firstName, a.first)) return true;
           }
+          if (oneName && normName(a.first) === l) return true;
         }
       }
       return false;
     });
   }
 
+  // Only show retirees verified within the last 6 months.
+  // Older retirements are dropped to keep the list relevant.
+  function isWithin6Months(dateStr) {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - 6);
+    return d >= cutoff;
+  }
+
   function findRetiredMatches(retired, firstName, lastName, city) {
     const l = normName(lastName);
     if (!l) return [];
+    const oneName = !!l && !firstName;
     const providers = (retired && retired.providers) || [];
     return providers.filter(function (p) {
-      if (normName(p.last) !== l) return false;
-      if (!namesMatch(firstName, p.first)) return false;
-      // Optional city match to disambiguate when provided
-      if (city && p.city && normName(p.city) !== normName(city.split(',')[0])) {
-        // Allow match if city is empty — be lenient
+      if (!isWithin6Months(p.verified_date)) return false;
+      if (normName(p.last) === l) {
+        if (oneName) return true;
+        return namesMatch(firstName, p.first);
       }
-      return true;
+      if (oneName && normName(p.first) === l) return true;
+      return false;
+    });
+  }
+
+  function allRecentRetired(retired) {
+    return ((retired && retired.providers) || []).filter(function (p) {
+      return isWithin6Months(p.verified_date);
     });
   }
 
@@ -140,6 +169,18 @@
     return { first: parts[0], last: parts[parts.length - 1] };
   }
 
+  // Recognise keyword/category searches like "retired", "findings", "death"
+  function detectCategory(raw) {
+    const q = (raw || '').toLowerCase().trim();
+    if (!q) return null;
+    if (/^(retired|retired providers?)$/.test(q)) return 'retired';
+    if (/^(findings?|discipline|disciplined|disciplinary|flagged|problems?)$/.test(q)) return 'findings';
+    if (/(patient death|death|died)/.test(q)) return 'death';
+    if (/(fraud|criminal|theft|medicaid fraud)/.test(q)) return 'fraud';
+    if (q === 'oig' || q === 'sanctions') return 'oig';
+    return null;
+  }
+
   async function runSearch(raw, profession) {
     resultsEl.innerHTML =
       '<p class="results-status">Looking up Florida providers...</p>';
@@ -148,6 +189,20 @@
     const oigPromise = loadOig();
     const flBoardPromise = loadFlBoard();
     const retiredPromise = loadRetired();
+
+    // Keyword search short-circuits the NPI lookup
+    const category = detectCategory(raw);
+    if (category) {
+      const [oig, flBoard, retired] = await Promise.all([
+        oigPromise,
+        flBoardPromise,
+        retiredPromise,
+      ]);
+      const providers = buildCategoryProviders(category, flBoard, retired, oig);
+      renderResults(raw, providers, profession, oig, flBoard, retired);
+      return;
+    }
+
 
     const params = new URLSearchParams({
       terms: raw,
@@ -208,7 +263,162 @@
       flBoardPromise,
       retiredPromise,
     ]);
+
+    // Add any retired providers matching the search that NPI didn't return.
+    // (Retired providers sometimes have deactivated NPIs and won't appear via
+    // the federal API, but we still want them surfaced from our local list.)
+    const { first: searchFirst, last: searchLast } = parseName(raw);
+
+    // Helper: check if a name already exists in the results
+    function alreadyInResults(last, first) {
+      return providers.some(function (p) {
+        const row = p.displayRow || [];
+        const parts = (row[0] || '').split(',').map((s) => s.trim());
+        return (
+          normName(parts[0]) === normName(last) &&
+          (!first || normName(parts[1]) === normName(first))
+        );
+      });
+    }
+
+    // Add retired providers not already in NPI results
+    findRetiredMatches(retired, searchFirst, searchLast, '').forEach(function (r) {
+      if (alreadyInResults(r.last, r.first)) return;
+      providers.push({
+        npi: '',
+        displayRow: [
+          (r.last || '').toUpperCase() + ', ' + (r.first || '').toUpperCase(),
+          '',
+          r.specialty || '',
+          (r.city || '') + ', FL',
+        ],
+        licenses: [],
+        addresses: [],
+        _syntheticRetired: true,
+      });
+    });
+
+    // Add FL Board disciplined providers not already in NPI results.
+    // This handles aliases (Sebastiani searched as "Franco") and any provider
+    // whose NPI didn't show up in the federal search.
+    findFlBoardMatches(flBoard, searchFirst, searchLast).forEach(function (c) {
+      if (alreadyInResults(c.last, c.first)) return;
+      // Also skip if any alias is already in results
+      if (Array.isArray(c.aliases) && c.aliases.some(function (a) {
+        return alreadyInResults(a.last, a.first);
+      })) return;
+      providers.push({
+        npi: '',
+        displayRow: [
+          (c.last || '').toUpperCase() + ', ' + (c.first || '').toUpperCase(),
+          '',
+          c.specialty || '',
+          (c.city || '') + ', FL',
+        ],
+        licenses: c.license
+          ? [{
+              taxonomy: { classification: c.specialty || '' },
+              lic_number: c.license,
+              lic_state: c.license_state || 'FL',
+              is_primary_taxonomy: 'Y',
+            }]
+          : [],
+        addresses: [],
+        _syntheticFlBoard: true,
+      });
+    });
+
     renderResults(raw, providers, profession, oig, flBoard, retired);
+  }
+
+  // Build synthetic provider entries from local data for category searches.
+  function buildCategoryProviders(category, flBoard, retired, oig) {
+    const out = [];
+
+    function syntheticFromBoard(c) {
+      return {
+        npi: '',
+        displayRow: [
+          (c.last || '').toUpperCase() + ', ' + (c.first || '').toUpperCase(),
+          '',
+          c.specialty || '',
+          (c.city || '') + ', FL',
+        ],
+        licenses: c.license
+          ? [{
+              taxonomy: { classification: c.specialty || '' },
+              lic_number: c.license,
+              lic_state: c.license_state || 'FL',
+              is_primary_taxonomy: 'Y',
+            }]
+          : [],
+        addresses: [],
+        _syntheticCategory: category,
+      };
+    }
+
+    function syntheticFromRetired(r) {
+      return {
+        npi: '',
+        displayRow: [
+          (r.last || '').toUpperCase() + ', ' + (r.first || '').toUpperCase(),
+          '',
+          r.specialty || '',
+          (r.city || '') + ', FL',
+        ],
+        licenses: [],
+        addresses: [],
+        _syntheticRetired: true,
+      };
+    }
+
+    function syntheticFromOig(e) {
+      return {
+        npi: e.npi || '',
+        displayRow: [
+          (e.last || '').toUpperCase() + ', ' + (e.first || '').toUpperCase(),
+          e.npi || '',
+          e.specialty || '',
+          (e.city || '') + ', FL',
+        ],
+        licenses: [],
+        addresses: [],
+        _syntheticCategory: 'oig',
+      };
+    }
+
+    if (category === 'retired') {
+      allRecentRetired(retired).forEach(function (r) {
+        out.push(syntheticFromRetired(r));
+      });
+    } else if (category === 'findings' || category === 'discipline') {
+      ((flBoard && flBoard.cases) || []).forEach(function (c) {
+        out.push(syntheticFromBoard(c));
+      });
+    } else if (category === 'death') {
+      ((flBoard && flBoard.cases) || []).forEach(function (c) {
+        const hasDeath = (c.actions || []).some(function (a) {
+          const t = ((a.summary || '') + ' ' + (a.type || '')).toLowerCase();
+          return t.includes('death') || t.includes('died');
+        });
+        if (hasDeath) out.push(syntheticFromBoard(c));
+      });
+    } else if (category === 'fraud') {
+      ((flBoard && flBoard.cases) || []).forEach(function (c) {
+        const hasFraud = (c.actions || []).some(function (a) {
+          const t = ((a.summary || '') + ' ' + (a.type || '')).toLowerCase();
+          return t.includes('fraud') || t.includes('theft') || t.includes('racketeering') || t.includes('criminal');
+        });
+        if (hasFraud) out.push(syntheticFromBoard(c));
+      });
+    } else if (category === 'oig') {
+      // Cap at 50 — the full list is 9k entries
+      (oig || []).slice(0, 50).forEach(function (e) {
+        out.push(syntheticFromOig(e));
+      });
+    }
+
+    return out;
   }
 
   function parseClinicalTablesResponse(data) {
@@ -322,12 +532,10 @@
       professionLabel +
       headingExtra +
       '. Click any topic to see details.</p>' +
-      '<p class="tab-tip">💡 External searches open in a <strong>new tab</strong>. To come back to these findings, just close that tab or click this Vetera tab.</p>' +
       '</div>' +
       '<div class="provider-list">' +
       cards +
-      '</div>' +
-      '<p class="back-to-findings"><a href="#findings">↑ Back to top of findings</a></p>';
+      '</div>';
   }
 
   function renderProviderCard(provider, raw, oig, flBoard, retired) {
@@ -398,119 +606,61 @@
       (hasFindings && !hasSevere ? ' provider-card-flag' : '');
 
     const isRetired = retiredHits.length > 0;
-    const retiredPill = isRetired
-      ? '<span class="retired-pill" title="Provider is retired per our records">RETIRED</span> '
-      : '';
-    const nameDecoration = (hasSevere
-      ? '<span class="severe-pill" title="Board disciplinary finding on record">FL Board Finding</span> '
-      : hasFindings
-      ? '<span class="flag-pill" title="Disciplinary entry on record">Finding on record</span> '
-      : '') + retiredPill;
+
+    // Traffic-light status dot + one-line plain-English verdict
+    let statusDot, verdictText;
+    if (hasSevere) {
+      statusDot = '<span class="status-dot dot-red" aria-label="serious finding">●</span>';
+      const sev = (flBoardHits[0] && flBoardHits[0].actions && flBoardHits[0].actions[0]) || {};
+      const date = sev.date ? ' (' + escapeHtml(sev.date) + ')' : '';
+      verdictText = 'Serious problem on record' + date;
+    } else if (hasFindings) {
+      statusDot = '<span class="status-dot dot-yellow" aria-label="finding on record">●</span>';
+      verdictText = 'Past issue on record';
+    } else if (isRetired) {
+      statusDot = '<span class="status-dot dot-gray" aria-label="retired">●</span>';
+      verdictText = 'Retired — no longer seeing patients';
+    } else {
+      statusDot = '<span class="status-dot dot-green" aria-label="nothing found">●</span>';
+      verdictText = 'No red flags';
+    }
 
     return (
       '<div class="' + cardClass + '">' +
       '<h4>' +
-      nameDecoration +
+      statusDot +
       escapeHtml(displayName) +
       '</h4>' +
+      '<p class="verdict-line">' + verdictText + '</p>' +
       '<p class="provider-summary">' +
       escapeHtml(specialty) +
       (cityState ? ' &middot; ' + escapeHtml(cityState) : '') +
-      ' &middot; NPI ' +
-      escapeHtml(npi) +
       '</p>' +
       retiredBanner +
       findingsBanner +
-      // License & Discipline
-      '<details class="topic">' +
-      '<summary>Is their license valid? Any past problems?<span class="topic-sub">License status &amp; disciplinary history (FL Board)</span></summary>' +
-      '<div class="topic-body">' +
-      (license
-        ? '<p><strong>License #:</strong> ' +
-          escapeHtml(license) +
-          (licenseState ? ' (' + escapeHtml(licenseState) + ')' : '') +
-          '</p>'
-        : '<p>No license number returned by the federal registry.</p>') +
-      '<p><strong>To check active status &amp; disciplinary history on the FL Board portal:</strong></p>' +
-      '<p>One click below — we copy the name to your clipboard and open the state portal. Paste into the Last Name field, then Search.</p>' +
-      '<p>' +
-      '<button type="button" class="flboard-btn" ' +
+      // Inline facts (license + address)
+      (license || addrLine
+        ? '<dl class="provider-facts">' +
+          (license
+            ? '<dt>License</dt><dd>' + escapeHtml(license) +
+              (licenseState ? ' (' + escapeHtml(licenseState) + ')' : '') +
+              '</dd>'
+            : '') +
+          (addrLine
+            ? '<dt>Address</dt><dd>' + escapeHtml(addrLine) + '</dd>'
+            : '') +
+          '</dl>'
+        : '') +
+      // One primary action — verify on FL Board
+      '<div class="provider-actions">' +
+      '<button type="button" class="action-btn action-btn-primary" ' +
       'data-flboard ' +
       'data-last="' + escapeHtml(lastName) + '" ' +
       'data-first="' + escapeHtml(firstName) + '" ' +
       'data-url="' + flDohUrl + '">' +
-      'Copy name &amp; open FL Board search (new tab)' +
+      'See full record on Florida state site ↗' +
       '</button>' +
-      '</p>' +
-      '<div class="result-guide">' +
-      '<p><strong>What you\'ll see on the FL Board portal:</strong></p>' +
-      '<p class="guide-ok"><span class="guide-icon">✓</span> Click the practitioner\'s name → check that <strong>"License Status"</strong> shows <em>Clear/Active</em>. Then scroll down to <strong>"Discipline"</strong>.</p>' +
-      '<p class="guide-ok"><span class="guide-icon">✓</span> <strong>"None"</strong> under Discipline means <em>the state board has not formally acted</em> against this provider. It does <strong>not</strong> mean no incidents occurred — many serious harms, including patient deaths, end in private civil settlements that never reach the board.</p>' +
-      '<p class="guide-warn"><span class="guide-icon">⚠</span> If any entries appear under Discipline, click each one — these are state fines, restrictions, or sanctions. Take note of dates and severity.</p>' +
       '</div>' +
-      '</div>' +
-      '</details>' +
-      // Federal Profile (NPI Registry)
-      '<details class="topic">' +
-      '<summary>Who are they? Where do they practice?<span class="topic-sub">Federal provider profile (NPI Registry)</span></summary>' +
-      '<div class="topic-body">' +
-      '<p><strong>NPI:</strong> ' + escapeHtml(npi) + '</p>' +
-      '<p><strong>Specialty:</strong> ' + escapeHtml(specialty) + '</p>' +
-      (addrLine
-        ? '<p><strong>Practice address:</strong> ' + escapeHtml(addrLine) + '</p>'
-        : '') +
-      '<p>Live data from the federal NPPES NPI Registry.</p>' +
-      '<p><a href="' +
-      npiSearchUrl +
-      '" target="_blank" rel="noopener" class="topic-link">View full NPI profile &rarr;</a></p>' +
-      '</div>' +
-      '</details>' +
-      // OIG LEIE Sanctions
-      '<details class="topic">' +
-      '<summary>Banned from Medicare or Medicaid?<span class="topic-sub">Federal sanctions list (OIG LEIE)</span></summary>' +
-      '<div class="topic-body">' +
-      '<p>The OIG LEIE lists individuals and entities excluded from federal healthcare programs. A listing here is a serious red flag.</p>' +
-      '<p>One click below — we copy the name to your clipboard and open the LEIE search.</p>' +
-      '<p>' +
-      '<button type="button" class="flboard-btn" ' +
-      'data-flboard ' +
-      'data-last="' + escapeHtml(lastName) + '" ' +
-      'data-first="' + escapeHtml(firstName) + '" ' +
-      'data-url="' + leieUrl + '">' +
-      'Copy name &amp; open OIG LEIE search (new tab)' +
-      '</button>' +
-      '</p>' +
-      '<div class="result-guide">' +
-      '<p><strong>What you\'ll see after pasting &amp; clicking Search:</strong></p>' +
-      '<p class="guide-ok"><span class="guide-icon">✓</span> <strong>"No Records Found"</strong> — the provider is <em>not</em> on the federal sanctions list. This is the normal outcome for most providers, but it does <strong>not</strong> mean no incidents have occurred. Federal exclusion is reserved for fraud and severe offenses; most malpractice never reaches this list.</p>' +
-      '<p class="guide-warn"><span class="guide-icon">⚠</span> <strong>Any records returned</strong> — serious red flag. Click a row to see the exclusion date, reason, and address. Confirm the address/birthdate matches your provider (similar names happen).</p>' +
-      '</div>' +
-      '</div>' +
-      '</details>' +
-      // SAM.gov Exclusions
-      '<details class="topic">' +
-      '<summary>Banned from federal contracts or programs?<span class="topic-sub">Federal exclusions list (SAM.gov)</span></summary>' +
-      '<div class="topic-body">' +
-      '<p>SAM.gov lists federal contracting and grant exclusions. An entry here means the federal government has barred this person from contracts or programs.</p>' +
-      '<p>One click below — we copy the name to your clipboard and open SAM.gov.</p>' +
-      '<p>' +
-      '<button type="button" class="flboard-btn" ' +
-      'data-flboard ' +
-      'data-last="' + escapeHtml(fullName) + '" ' +
-      'data-first="" ' +
-      'data-url="' + samUrl + '">' +
-      'Copy name &amp; open SAM.gov search (new tab)' +
-      '</button>' +
-      '</p>' +
-      '<div class="result-guide">' +
-      '<p><strong>What to do on SAM.gov:</strong></p>' +
-      '<p class="guide-ok"><span class="guide-icon">1</span> Paste the name into the <strong>"Keyword Search"</strong> field at the top.</p>' +
-      '<p class="guide-ok"><span class="guide-icon">2</span> Press Enter or click the magnifying glass.</p>' +
-      '<p class="guide-ok"><span class="guide-icon">✓</span> <strong>"No results found"</strong> — provider is not on the federal exclusions list. SAM.gov only covers federal contracting and grant bans; absence here is expected for clinicians and says nothing about clinical safety.</p>' +
-      '<p class="guide-warn"><span class="guide-icon">⚠</span> Any results = serious red flag. Click to see the exclusion details.</p>' +
-      '</div>' +
-      '</div>' +
-      '</details>' +
       '</div>'
     );
   }
@@ -598,22 +748,7 @@
 
   function renderFindingsBanner(flBoardHits, oigHits) {
     if (!flBoardHits.length && !oigHits.length) {
-      return (
-        '<div class="findings-banner findings-unverified">' +
-        '<strong>No matches in the two databases we automatically check</strong> ' +
-        '(OIG federal exclusions list and our curated FL Board discipline file). ' +
-        '<p class="unverified-warning"><strong>This is not a clean bill of health.</strong> A patient can be seriously harmed — or die — under a provider\'s care without any record appearing in the sources above.</p>' +
-        '<p class="unverified-label">What we have <em>not</em> checked automatically:</p>' +
-        '<ul class="unverified-list">' +
-        '<li>Civil court records — malpractice suits and wrongful-death cases. Many settle privately and never reach the state board.</li>' +
-        '<li>Pending or unresolved board complaints (only closed actions appear in our file).</li>' +
-        '<li>News reports, obituaries, and local media coverage of incidents.</li>' +
-        '<li>National Practitioner Data Bank (NPDB) — not publicly accessible.</li>' +
-        '<li>Hospital privilege revocations and peer-review actions.</li>' +
-        '</ul>' +
-        '<p class="unverified-cta">For a deeper search across civil court filings and public news archives, request the <a href="request.html">full background report</a>.</p>' +
-        '</div>'
-      );
+      return '';
     }
 
     // Detect the most severe finding for top-level treatment
@@ -638,9 +773,9 @@
       html +=
         '<div class="severe-banner">' +
         '<div class="severe-banner-header">' +
-        'Florida Board of Dentistry — Disciplinary Finding' +
+        '⚠ Past problem on record' +
         (mostSevere.action.date
-          ? ' (' + escapeHtml(mostSevere.action.date) + ')'
+          ? ' — ' + escapeHtml(mostSevere.action.date)
           : '') +
         '</div>' +
         '<div class="severe-banner-body">' +
@@ -669,7 +804,7 @@
 
     html +=
       '<div class="findings-banner findings-alert">' +
-      '<strong>Additional public-record entries</strong>';
+      '<strong>More on record</strong>';
 
     flBoardHits.forEach(function (c) {
       (c.actions || []).forEach(function (a) {

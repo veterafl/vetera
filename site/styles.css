@@ -202,6 +202,26 @@ body.has-results .home-btn-ghost {
   text-decoration: underline;
 }
 
+.home-tip {
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin: 14px auto 0;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.home-tip strong {
+  color: var(--ink);
+}
+
+body.has-results .home-tip {
+  display: none;
+}
+
 .topic-sub {
   display: block;
   font-size: 11.5px;
@@ -564,6 +584,95 @@ body.has-results .home-btn-ghost {
 .heading-warn strong {
   color: #c62828;
   font-weight: 700;
+}
+
+/* Inline provider facts (replaces topic accordions) */
+.provider-facts {
+  margin: 8px 0 12px;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+
+.provider-facts dt {
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin: 0;
+}
+
+.provider-facts dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.provider-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.action-btn {
+  background: white;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+
+.action-btn-primary {
+  background: var(--accent);
+  color: white !important;
+  border-color: var(--accent);
+}
+
+.action-btn-primary:hover {
+  background: #143f72;
+  border-color: #143f72;
+  color: white !important;
+}
+
+/* Traffic-light status dots */
+.status-dot {
+  display: inline-block;
+  font-size: 18px;
+  line-height: 1;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.dot-green { color: #2e7d32; }
+.dot-yellow { color: #ef6c00; }
+.dot-red { color: #c62828; }
+.dot-gray { color: #5f6368; }
+
+.verdict-line {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.provider-card-severe .verdict-line {
+  color: #c62828;
+}
+
+.provider-card-flag .verdict-line {
+  color: #6b3a00;
 }
 
 .no-results-help {

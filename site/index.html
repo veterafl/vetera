@@ -3,50 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vetera — Know Your Florida Provider</title>
-  <meta name="description" content="Free background lookup on Florida healthcare providers. License, specialty, and public records — in seconds." />
+  <title>Vetera — Look Up Florida Dentists &amp; Doctors Before You Book</title>
+  <meta name="description" content="Free. Look up any Florida dentist or doctor before your appointment. See past disciplinary findings and retirement status." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta property="og:title" content="Vetera — Look Up Florida Dentists &amp; Doctors Before You Book" />
+  <meta property="og:description" content="Free. Look up any Florida dentist or doctor before your appointment. See past disciplinary findings, federal sanctions, and retirement status." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Vetera — Look Up Florida Dentists &amp; Doctors" />
+  <meta name="twitter:description" content="Free. Check any Florida dentist or doctor's public record before your appointment." />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="home">
   <main class="home-main">
     <div class="home-center">
       <h1 class="home-logo">Vetera</h1>
-      <p class="home-tag">Know your provider before your appointment.</p>
+      <p class="home-tag">Look up your Florida dentist or doctor before you book.</p>
 
       <form class="home-search" id="searchForm" autocomplete="off">
         <input
           type="text"
           id="providerName"
           name="providerName"
-          placeholder="Enter a provider name"
+          placeholder="Type a dentist or doctor's name"
           required
           autofocus
         />
-        <select id="professionFilter" class="profession-filter" aria-label="Filter by profession">
-          <option value="">All professions</option>
-          <option value="Dentist">Dentist (any specialty)</option>
-          <option value="Oral and Maxillofacial Surgery">Oral &amp; Maxillofacial Surgeon</option>
-          <option value="Orthodontics">Orthodontist</option>
-          <option value="Endodontics">Endodontist</option>
-          <option value="Periodontics">Periodontist</option>
-          <option value="Pediatric Dentistry">Pediatric Dentist</option>
-          <option value="Prosthodontics">Prosthodontist</option>
-          <option value="Dental Hygienist">Dental Hygienist</option>
-          <option value="Dental Assistant">Dental Assistant</option>
-          <option value="Plastic Surgery">Plastic Surgeon</option>
-          <option value="Internal Medicine">Physician — Internal Medicine</option>
-          <option value="Family Medicine">Physician — Family Medicine</option>
-        </select>
         <div class="home-actions">
-          <button type="submit" class="home-btn">Quick Check</button>
-          <button type="button" id="newSearchBtn" class="home-btn home-btn-ghost">← New search</button>
+          <button type="submit" class="home-btn">Search</button>
+          <button type="button" id="newSearchBtn" class="home-btn home-btn-ghost">← Start over</button>
         </div>
       </form>
 
-      <p class="home-note">Free. Florida providers. Public records only.</p>
-      <p class="home-example">
-        First time? Try
-        <a href="#" id="exampleSearch" data-name="Daniel Berenstein">Daniel Berenstein</a>
+      <p class="home-note">Free. No signup. We don't track you.</p>
+      <p class="home-tip">
+        <strong>First time?</strong> Type a dentist or doctor's full name (first and last).
+        We check Florida public records for past problems, federal sanctions, and retirement.
       </p>
 
       <div id="searchResults" class="home-results" aria-live="polite"></div>
@@ -55,11 +47,12 @@
 
   <footer class="home-footer">
     <div>
+      <a href="pricing.html">Pricing</a>
       <a href="methodology.html">Methodology</a>
       <a href="faq.html">FAQ</a>
       <a href="terms.html">Terms</a>
       <a href="privacy.html">Privacy</a>
-      <a href="mailto:corrections@vetera.example">Provider Corrections</a>
+      <a href="mailto:corrections@cleardds.com">Provider Corrections</a>
     </div>
     <p class="footer-disclaimer">
       &copy; 2026 Vetera &middot; Information sourced from U.S. federal and Florida public records &middot;
