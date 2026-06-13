@@ -92,6 +92,19 @@
     return out;
   }
 
+  // Count a "use" = one search performed. Sends NO name or personal data —
+  // only that a search happened and whether it found a dentist. This is the
+  // pilot's core metric (target ~1000 uses). window.va is the Vercel Web
+  // Analytics queue stub from analytics.js (free on the Hobby plan, custom
+  // events included); the try/catch makes tracking a no-op if it's disabled.
+  function trackSearch(count) {
+    try {
+      if (typeof window.va === 'function') {
+        window.va('event', { name: 'search', result: count > 0 ? 'found' : 'none' });
+      }
+    } catch (e) { /* analytics must never break search */ }
+  }
+
   // ---- Search flow ------------------------------------------------------
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -156,6 +169,7 @@
       return a.l.localeCompare(b.l);
     });
 
+    trackSearch(matches.length);
     renderResults(raw, matches);
   }
 
