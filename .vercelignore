@@ -1,0 +1,7 @@
+# Raw FL DOH bulk download — huge, not needed at runtime.
+# site/data/dentists.json is the processed file that actually ships.
+data/raw/
+
+# Dev / docs not needed in the deployed site
+scripts/
+*.md

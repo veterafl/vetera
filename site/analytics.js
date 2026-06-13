@@ -1,27 +1,19 @@
-// Cloudflare Web Analytics — privacy-friendly, no cookies, free.
+// Vercel Web Analytics — privacy-friendly, no cookies, free, no separate account.
+// The site is hosted on Vercel, so this "just works" once Web Analytics is
+// enabled for the project in the Vercel dashboard:
+//   Vercel dashboard → project "vetera" → Analytics tab → Enable.
 //
-// SETUP (5 minutes):
-// 1. Go to https://cloudflare.com and sign up (free).
-// 2. In the dashboard, navigate to "Analytics & Logs" → "Web Analytics".
-// 3. Click "Add a site" → enter your domain (or use the "Free token" option
-//    if your site is hosted elsewhere).
-// 4. Cloudflare gives you a token that looks like: 7a3b8c9d2e1f4g5h6i7j8k9l
-// 5. Paste that token below, replacing 'YOUR_CLOUDFLARE_TOKEN_HERE'.
-//
-// That's it. Data starts flowing in ~1 hour. View at dash.cloudflare.com.
+// Vercel serves /_vercel/insights/script.js only after Analytics is enabled;
+// until then this loads nothing and does no harm.
 
 (function () {
-  var TOKEN = 'YOUR_CLOUDFLARE_TOKEN_HERE';
+  // Queue stub so any calls before the script loads aren't lost
+  window.va = window.va || function () {
+    (window.vaq = window.vaq || []).push(arguments);
+  };
 
-  // Don't load the beacon until a real token is set
-  if (!TOKEN || TOKEN === 'YOUR_CLOUDFLARE_TOKEN_HERE') return;
-
-  var script = document.createElement('script');
-  script.defer = true;
-  script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
-  script.setAttribute(
-    'data-cf-beacon',
-    JSON.stringify({ token: TOKEN })
-  );
-  document.head.appendChild(script);
+  var s = document.createElement('script');
+  s.defer = true;
+  s.src = '/_vercel/insights/script.js';
+  document.head.appendChild(s);
 })();
