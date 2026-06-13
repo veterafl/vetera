@@ -193,8 +193,7 @@
     let licIcon, licText;
     if (rec.a === 1) {
       licIcon = 'good';
-      licText = 'Licensed and active as a dentist in Florida right now.' +
-        (rec.e ? ' License good until ' + escapeHtml(rec.e) + '.' : '');
+      licText = 'Licensed and active.';
     } else {
       licIcon = 'gray';
       licText = 'Not active right now: ' + escapeHtml((rec.s || 'status unknown').toLowerCase()) + '.';
@@ -204,8 +203,7 @@
     let discIcon, discText;
     if (rec.d === 1) {
       discIcon = 'warn';
-      discText = 'The state has a record of action against this dentist. ' +
-        'See the official record to learn what happened.';
+      discText = 'State action on record.';
     } else {
       discIcon = 'good';
       discText = 'No state action on record.';
