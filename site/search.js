@@ -221,7 +221,7 @@
     'license lapsed (delinquent)': 'License lapsed',
     'voluntarily gave up license': 'License surrendered',
     'licensed (military active status)': 'Military status',
-    'gave up license during a state action': 'Surrendered during action',
+    'gave up license during a state action': 'License surrendered during action',
     'license revoked by the state': 'License revoked',
     'licensed, has outstanding obligations': 'Outstanding obligations',
     'application expired': 'Application expired',
