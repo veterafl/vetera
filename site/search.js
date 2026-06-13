@@ -83,7 +83,10 @@
   }
 
   function findMatches(raw) {
-    const q = tokenize(raw);
+    // Drop a leading honorific ("Dr.", "Doctor", "Prof.") so "Dr. Adelson"
+    // matches the same as "Adelson" — patients commonly type the title.
+    const cleaned = (raw || '').replace(/^\s*(dr\.?|doctor|prof\.?)\s+/i, '');
+    const q = tokenize(cleaned);
     if (!q.length || !DATA) return [];
     const out = [];
     for (let i = 0; i < DATA.length; i++) {
