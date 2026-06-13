@@ -5,3 +5,6 @@
 node_modules/
 /tmp/
 *.tmp
+
+# Raw FL DOH bulk download (huge; dentists.json is regenerated from it via scripts/build_dentists.py)
+data/raw/

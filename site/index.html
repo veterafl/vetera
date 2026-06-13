@@ -18,14 +18,14 @@
   <main class="home-main">
     <div class="home-center">
       <h1 class="home-logo">Vetera</h1>
-      <p class="home-tag">Look up your Florida dentist or doctor before you book.</p>
+      <p class="home-tag">Check your Florida dentist before your visit.</p>
 
       <form class="home-search" id="searchForm" autocomplete="off">
         <input
           type="text"
           id="providerName"
           name="providerName"
-          placeholder="Type a dentist or doctor's name"
+          placeholder="Type a dentist's name"
           required
           autofocus
         />
@@ -35,10 +35,11 @@
         </div>
       </form>
 
-      <p class="home-note">Free. No signup. We don't track you.</p>
+      <p class="home-note">Free. No sign-up. We don't track you.</p>
       <p class="home-tip">
-        <strong>First time?</strong> Type a dentist or doctor's full name (first and last).
-        We check Florida public records for past problems, federal sanctions, and retirement.
+        <strong>New here?</strong> Type a dentist's name (first and last works best).
+        We use Florida's own public records to show you two simple things:
+        is the dentist licensed right now, and has the state ever taken action against them.
       </p>
 
       <div id="searchResults" class="home-results" aria-live="polite"></div>
@@ -52,7 +53,7 @@
       <a href="faq.html">FAQ</a>
       <a href="terms.html">Terms</a>
       <a href="privacy.html">Privacy</a>
-      <a href="mailto:corrections@cleardds.com">Provider Corrections</a>
+      <a href="mailto:veterareports@gmail.com">Provider Corrections</a>
     </div>
     <p class="footer-disclaimer">
       &copy; 2026 Vetera &middot; Information sourced from U.S. federal and Florida public records &middot;
@@ -61,9 +62,6 @@
     </p>
   </footer>
 
-  <script src="data/fl-board-discipline.js"></script>
-  <script src="data/fl-retired.js"></script>
-  <script src="data/oig-fl-exclusions.js"></script>
   <script src="search.js"></script>
   <script defer src="analytics.js"></script>
 </body>
