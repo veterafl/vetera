@@ -215,6 +215,7 @@
       '<div class="' + cardClass + '">' +
       '<h4>' + dot(rec.d === 1 ? 'yellow' : (rec.a === 1 ? 'green' : 'gray')) +
       escapeHtml(name) + '</h4>' +
+      (rec.c ? '<p class="provider-city">' + escapeHtml(rec.c) + ', FL</p>' : '') +
       '<p class="fact-line">' + mark(licIcon) + escapeHtml(licText) + '</p>' +
       '<p class="fact-line">' + mark(discIcon) + discText + '</p>' +
       '<div class="provider-actions">' +

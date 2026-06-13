@@ -14,6 +14,19 @@ import os
 
 SRC = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "dbdumps", "ce_broker", "lic_status.dat")
 OUT = os.path.join(os.path.dirname(__file__), "..", "site", "data", "dentists.json")
+# license -> practice city, harvested from NPPES by scripts/harvest_city.py
+CITY = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "nppes-city.json")
+
+
+def lic_key(s):
+    """Match harvest_city.py's key: digits only, leading zeros stripped."""
+    return "".join(ch for ch in str(s) if ch.isdigit()).lstrip("0") or "0"
+
+
+city_map = {}
+if os.path.exists(CITY):
+    with open(CITY, encoding="utf-8") as cf:
+        city_map = json.load(cf)
 
 # Field order per LicenseStatusMetaData.pdf
 # 0 ProfCode 1 Rank 2 LicNum 3 ActivityStatus 4 Status 5 OrigDate 6 ExpDate
@@ -80,6 +93,9 @@ with open(SRC, "r", encoding="latin-1") as f:
             "e": exp,
             "d": 1 if disciplined else 0,
         }
+        city = city_map.get(lic_key(parts[2].strip()))
+        if city:
+            rec["c"] = city           # practice city (omitted when unknown)
         records.append(rec)
 
 # Sort by last name then first for stable output
@@ -91,9 +107,11 @@ with open(OUT, "w", encoding="utf-8") as f:
 
 active = sum(1 for r in records if r["a"])
 disc = sum(1 for r in records if r["d"])
+with_city = sum(1 for r in records if r.get("c"))
 size_mb = os.path.getsize(OUT) / 1_000_000
 print(f"dentists parsed:      {seen}")
 print(f"records written:      {len(records)}")
 print(f"  active & good:      {active}")
 print(f"  flagged discipline: {disc}")
+print(f"  with practice city: {with_city}")
 print(f"output:               {OUT}  ({size_mb:.1f} MB)")

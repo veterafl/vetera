@@ -318,6 +318,14 @@ body.has-results .home-tip {
   color: var(--accent);
 }
 
+/* Practice city — quiet gray subtitle under the name, aligned past the dot */
+.provider-city {
+  margin: -8px 0 10px;
+  padding-left: 26px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
 .provider-card dl {
   margin: 0 0 10px;
   display: grid;
@@ -695,7 +703,10 @@ body.has-results .home-tip {
 
 .fact-good { color: #2e7d32; }
 .fact-warn { color: #ef6c00; }
+.fact-bad { color: #c62828; }
 .fact-gray { color: #5f6368; }
+
+.status-label { color: var(--ink-soft); font-weight: 600; }
 
 .results-disclaimer {
   margin: 18px auto 0;
