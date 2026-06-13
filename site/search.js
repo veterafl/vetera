@@ -144,9 +144,14 @@
 
     let matches = findMatches(raw);
 
-    // Show dentists with a state action first (most important), then active
+    // Rank by how serious the record is: severe first, then caution, then the
+    // rest — and active before inactive within each.
+    function rank(r) {
+      const t = statusInfo(r).tier;
+      return t === 'severe' ? 2 : (t === 'caution' ? 1 : 0);
+    }
     matches.sort(function (a, b) {
-      if (b.d !== a.d) return b.d - a.d;
+      if (rank(b) !== rank(a)) return rank(b) - rank(a);
       if (b.a !== a.a) return b.a - a.a;
       return a.l.localeCompare(b.l);
     });
@@ -164,10 +169,10 @@
     const capped = matches.slice(0, MAX_RESULTS);
     const cards = capped.map(renderCard).join('');
 
-    const flagged = matches.filter(function (m) { return m.d === 1; }).length;
-    const flagNote = flagged
-      ? ' <span class="heading-warn">— <strong>' + flagged +
-        '</strong> with a state action on record</span>'
+    const severe = matches.filter(function (m) { return statusInfo(m).tier === 'severe'; }).length;
+    const flagNote = severe
+      ? ' <span class="heading-warn">— <strong>' + severe +
+        '</strong> with a state disciplinary action</span>'
       : '';
 
     const moreNote = matches.length > MAX_RESULTS
@@ -186,38 +191,70 @@
       'Vetera shows public records only — no opinions or ratings.</p>';
   }
 
+  // Florida's status, shortened to its plainest 1–2 word form. We do not change
+  // the meaning — the full official wording stays on the state record button.
+  // Tiers control how loudly it shows: 'severe' (disciplinary outcome — red),
+  // 'caution' (active but owes something — amber), 'good' (licensed — green),
+  // 'neutral' (simply not active — gray).
+  const STATUS_SHORT = {
+    'licensed and in good standing': 'Active — in good standing',
+    'license no longer valid': 'No longer valid',
+    'deceased': 'Deceased',
+    'retired': 'Retired',
+    'license lapsed (delinquent)': 'Lapsed',
+    'voluntarily gave up license': 'Surrendered',
+    'licensed (military active status)': 'Military status',
+    'gave up license during a state action': 'Surrendered during action',
+    'license revoked by the state': 'Revoked',
+    'licensed, has outstanding obligations': 'Outstanding obligations',
+    'application expired': 'Application expired',
+    'licensed, but on probation': 'On probation',
+    'license suspended by the state': 'Suspended',
+    'licensed with conditions': 'With conditions',
+    'renewal denied': 'Renewal denied'
+  };
+
+  function statusInfo(rec) {
+    const s = (rec.s || '').toLowerCase();
+    let tier;
+    if (s.indexOf('revoked') !== -1 || s.indexOf('suspended') !== -1 ||
+        s.indexOf('probation') !== -1 || s.indexOf('renewal denied') !== -1 ||
+        s.indexOf('gave up license during a state action') !== -1) {
+      tier = 'severe';
+    } else if (s.indexOf('outstanding obligations') !== -1) {
+      tier = 'caution';
+    } else if (rec.a === 1) {
+      tier = 'good';
+    } else {
+      tier = 'neutral';
+    }
+    const text = STATUS_SHORT[s] || (rec.s || 'Status unknown');
+    return { tier: tier, text: text };
+  }
+
   function renderCard(rec) {
     const name = titleCase((rec.f + ' ' + (rec.n ? rec.n + ' ' : '') + rec.l).trim());
 
-    // License line
-    let licIcon, licText;
-    if (rec.a === 1) {
-      licIcon = 'good';
-      licText = 'Licensed and active.';
-    } else {
-      licIcon = 'gray';
-      licText = 'Not active right now: ' + escapeHtml((rec.s || 'status unknown').toLowerCase()) + '.';
-    }
+    // One color-coded status line — Florida's own status, condensed. Color does
+    // the work: green = active/good, red = a disciplinary action, amber = active
+    // but owes something, gray = simply not active. No opinion on the person.
+    const st = statusInfo(rec);
+    const stIcon = st.tier === 'severe' ? 'bad'
+      : (st.tier === 'caution' ? 'warn' : (st.tier === 'good' ? 'good' : 'gray'));
 
-    // Discipline line
-    let discIcon, discText;
-    if (rec.d === 1) {
-      discIcon = 'warn';
-      discText = 'State action on record.';
-    } else {
-      discIcon = 'good';
-      discText = 'No state action on record.';
-    }
+    let cardClass = 'provider-card';
+    if (st.tier === 'severe') cardClass += ' provider-card-severe';
+    else if (st.tier === 'caution') cardClass += ' provider-card-flag';
 
-    const cardClass = 'provider-card' + (rec.d === 1 ? ' provider-card-flag' : '');
+    const headDot = st.tier === 'severe' ? 'red'
+      : (st.tier === 'caution' ? 'yellow' : (rec.a === 1 ? 'green' : 'gray'));
 
     return (
       '<div class="' + cardClass + '">' +
-      '<h4>' + dot(rec.d === 1 ? 'yellow' : (rec.a === 1 ? 'green' : 'gray')) +
-      escapeHtml(name) + '</h4>' +
+      '<h4>' + dot(headDot) + escapeHtml(name) + '</h4>' +
       (rec.c ? '<p class="provider-city">' + escapeHtml(rec.c) + ', FL</p>' : '') +
-      '<p class="fact-line">' + mark(licIcon) + escapeHtml(licText) + '</p>' +
-      '<p class="fact-line">' + mark(discIcon) + discText + '</p>' +
+      '<p class="fact-line">' + mark(stIcon) +
+      '<span><span class="status-label">Florida record:</span> ' + escapeHtml(st.text) + '</span></p>' +
       '<div class="provider-actions">' +
       '<button type="button" class="action-btn action-btn-primary" data-flboard ' +
       'data-last="' + escapeHtml(rec.l) + '" data-first="' + escapeHtml(rec.f) + '" ' +
@@ -253,6 +290,7 @@
   }
   function mark(kind) {
     if (kind === 'good') return '<span class="fact-mark fact-good" aria-hidden="true">✓</span> ';
+    if (kind === 'bad') return '<span class="fact-mark fact-bad" aria-hidden="true">⚠</span> ';
     if (kind === 'warn') return '<span class="fact-mark fact-warn" aria-hidden="true">⚠</span> ';
     return '<span class="fact-mark fact-gray" aria-hidden="true">•</span> ';
   }
