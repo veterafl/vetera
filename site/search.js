@@ -214,7 +214,7 @@
   // 'caution' (active but owes something — amber), 'good' (licensed — green),
   // 'neutral' (simply not active — gray).
   const STATUS_SHORT = {
-    'licensed and in good standing': 'Good standing',
+    'licensed and in good standing': 'Active',
     'license no longer valid': 'No longer valid',
     'deceased': 'Deceased',
     'retired': 'Retired',
@@ -271,7 +271,7 @@
       '<h4>' + dot(headDot) + escapeHtml(name) + '</h4>' +
       (rec.c ? '<p class="provider-city">' + escapeHtml(rec.c) + ', FL</p>' : '') +
       '<p class="fact-line">' + mark(stIcon) +
-      '<span><span class="status-label">Florida record:</span> ' + escapeHtml(st.text) + '</span></p>' +
+      '<span>' + escapeHtml(st.text) + '</span></p>' +
       '<div class="provider-actions">' +
       '<button type="button" class="action-btn action-btn-primary" data-flboard ' +
       'data-last="' + escapeHtml(rec.l) + '" data-first="' + escapeHtml(rec.f) + '" ' +
