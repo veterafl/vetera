@@ -17,7 +17,7 @@
 
   // ---- Data loading (fetched once, then cached) -------------------------
   let dataPromise = null;
-  let indexByLast = null; // Map: UPPERCASE last name -> [records]
+  let DATA = null; // array of records, each with precomputed name tokens
 
   function loadDentists() {
     if (dataPromise) return dataPromise;
@@ -27,17 +27,15 @@
         return r.json();
       })
       .then(function (records) {
-        indexByLast = new Map();
+        // Precompute name tokens so compound surnames ("Martinez Coronel") and
+        // names typed with middle names all match correctly.
         for (let i = 0; i < records.length; i++) {
           const rec = records[i];
-          const key = normName(rec.l);
-          let bucket = indexByLast.get(key);
-          if (!bucket) {
-            bucket = [];
-            indexByLast.set(key, bucket);
-          }
-          bucket.push(rec);
+          rec.__lt = tokenize(rec.l);                       // last-name tokens
+          rec.__ft = tokenize(rec.f);                       // first-name tokens
+          rec.__at = tokenize(rec.f + ' ' + (rec.n || '') + ' ' + rec.l); // all
         }
+        DATA = records;
         return records;
       });
     return dataPromise;
@@ -47,16 +45,15 @@
     return (s || '').toString().trim().toUpperCase();
   }
 
-  // Strict matching so we never blame the wrong person:
-  // last name must match exactly; first name (if given) must match, or match by
-  // initial only when the user themselves typed a single-letter initial.
-  function namesMatch(inputFirst, recordFirst) {
-    const f = normName(inputFirst);
-    const r = normName(recordFirst);
-    if (!f) return true;
-    if (f === r) return true;
-    if (f.length === 1 && r && r[0] === f) return true;
-    return false;
+  // Split a name into uppercase word tokens, breaking on spaces, hyphens,
+  // apostrophes, periods — so "Martinez Coronel", "Al-Rashid", "O'Brien" all
+  // become clean token lists.
+  function tokenize(s) {
+    return (s || '')
+      .toString()
+      .toUpperCase()
+      .split(/[^A-Z0-9]+/)
+      .filter(Boolean);
   }
 
   function parseName(raw) {
@@ -66,35 +63,31 @@
     return { first: parts[0], last: parts[parts.length - 1] };
   }
 
-  // Find matching dentists. If the user gave one word, match it as a last name
-  // OR a first name (people search either way).
-  function findMatches(first, last) {
-    const lastKey = normName(last);
-    const oneName = !first;
-    const out = [];
-    const seen = new Set();
-
-    function consider(rec, ok) {
-      if (!ok) return;
-      const id = rec.lic + '|' + rec.l + '|' + rec.f;
-      if (seen.has(id)) return;
-      seen.add(id);
-      out.push(rec);
+  // Decide whether a record matches the typed query.
+  // - One word: match it as a last-name token OR a first-name token.
+  // - Several words: every typed word must appear somewhere in the name, AND at
+  //   least one of them must be part of the last name (so we don't blame a
+  //   same-first-name stranger). Handles compound surnames and middle names.
+  function recordMatches(rec, q) {
+    if (q.length === 1) {
+      const t = q[0];
+      return rec.__lt.indexOf(t) !== -1 || rec.__ft.indexOf(t) !== -1;
     }
+    for (let i = 0; i < q.length; i++) {
+      if (rec.__at.indexOf(q[i]) === -1) return false;
+    }
+    for (let i = 0; i < q.length; i++) {
+      if (rec.__lt.indexOf(q[i]) !== -1) return true;
+    }
+    return false;
+  }
 
-    // Primary: last-name bucket
-    const bucket = indexByLast.get(lastKey) || [];
-    bucket.forEach(function (rec) {
-      consider(rec, oneName ? true : namesMatch(first, rec.f));
-    });
-
-    // If one word, also try it as a first name across all records
-    if (oneName) {
-      indexByLast.forEach(function (recs) {
-        recs.forEach(function (rec) {
-          consider(rec, normName(rec.f) === lastKey);
-        });
-      });
+  function findMatches(raw) {
+    const q = tokenize(raw);
+    if (!q.length || !DATA) return [];
+    const out = [];
+    for (let i = 0; i < DATA.length; i++) {
+      if (recordMatches(DATA[i], q)) out.push(DATA[i]);
     }
     return out;
   }
@@ -149,8 +142,7 @@
       return;
     }
 
-    const { first, last } = parseName(raw);
-    let matches = findMatches(first, last);
+    let matches = findMatches(raw);
 
     // Show dentists with a state action first (most important), then active
     matches.sort(function (a, b) {
