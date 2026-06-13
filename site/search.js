@@ -215,7 +215,7 @@
   // 'neutral' (simply not active — gray).
   const STATUS_SHORT = {
     'licensed and in good standing': 'License active',
-    'license no longer valid': 'No longer valid',
+    'license no longer valid': 'License no longer valid',
     'deceased': 'Deceased',
     'retired': 'Retired',
     'license lapsed (delinquent)': 'License lapsed',
