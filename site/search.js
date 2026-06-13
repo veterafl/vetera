@@ -225,7 +225,7 @@
     'license revoked by the state': 'License revoked',
     'licensed, has outstanding obligations': 'Outstanding obligations',
     'application expired': 'Application expired',
-    'licensed, but on probation': 'On probation',
+    'licensed, but on probation': 'Licensed, but on probation',
     'license suspended by the state': 'License suspended',
     'licensed with conditions': 'With conditions',
     'renewal denied': 'Renewal denied'
