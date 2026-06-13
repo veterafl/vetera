@@ -220,7 +220,7 @@
     'retired': 'Retired',
     'license lapsed (delinquent)': 'License lapsed',
     'voluntarily gave up license': 'License surrendered',
-    'licensed (military active status)': 'Military status',
+    'licensed (military active status)': 'Licensed, active military',
     'gave up license during a state action': 'License surrendered during action',
     'license revoked by the state': 'License revoked',
     'licensed, has outstanding obligations': 'Licensed, has open obligations',
