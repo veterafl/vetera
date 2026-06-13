@@ -223,7 +223,7 @@
     'licensed (military active status)': 'Military status',
     'gave up license during a state action': 'License surrendered during action',
     'license revoked by the state': 'License revoked',
-    'licensed, has outstanding obligations': 'Outstanding obligations',
+    'licensed, has outstanding obligations': 'Licensed, has open obligations',
     'application expired': 'Application expired',
     'licensed, but on probation': 'Licensed, but on probation',
     'license suspended by the state': 'License suspended',
