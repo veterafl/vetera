@@ -214,7 +214,7 @@
   // 'caution' (active but owes something — amber), 'good' (licensed — green),
   // 'neutral' (simply not active — gray).
   const STATUS_SHORT = {
-    'licensed and in good standing': 'Active',
+    'licensed and in good standing': 'License active',
     'license no longer valid': 'No longer valid',
     'deceased': 'Deceased',
     'retired': 'Retired',
