@@ -222,11 +222,11 @@
     'voluntarily gave up license': 'Surrendered',
     'licensed (military active status)': 'Military status',
     'gave up license during a state action': 'Surrendered during action',
-    'license revoked by the state': 'Revoked',
+    'license revoked by the state': 'License revoked',
     'licensed, has outstanding obligations': 'Outstanding obligations',
     'application expired': 'Application expired',
     'licensed, but on probation': 'On probation',
-    'license suspended by the state': 'Suspended',
+    'license suspended by the state': 'License suspended',
     'licensed with conditions': 'With conditions',
     'renewal denied': 'Renewal denied'
   };
