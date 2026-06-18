@@ -14,8 +14,12 @@ import os
 
 SRC = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "dbdumps", "ce_broker", "lic_status.dat")
 OUT = os.path.join(os.path.dirname(__file__), "..", "site", "data", "dentists.json")
-# license -> practice city, harvested from NPPES by scripts/harvest_city.py
-CITY = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "nppes-city.json")
+# license -> city, straight from the official FL DOH record
+# (scripts/harvest_city_doh.py). NPPES is only a fallback for the rare
+# dentist FL DOH has no city for (scripts/harvest_city.py).
+CITY_DOH = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "doh-city.json")
+CITY_NPPES = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "nppes-city.json")
+CITY_OVERRIDES = os.path.join(os.path.dirname(__file__), "city-overrides.json")
 
 
 def lic_key(s):
@@ -23,10 +27,15 @@ def lic_key(s):
     return "".join(ch for ch in str(s) if ch.isdigit()).lstrip("0") or "0"
 
 
-city_map = {}
-if os.path.exists(CITY):
-    with open(CITY, encoding="utf-8") as cf:
-        city_map = json.load(cf)
+def load_map(path):
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as cf:
+            return json.load(cf)
+    return {}
+
+doh_city = load_map(CITY_DOH)
+nppes_city = load_map(CITY_NPPES)
+overrides = {k: v for k, v in load_map(CITY_OVERRIDES).items() if not k.startswith("_")}
 
 # Field order per LicenseStatusMetaData.pdf
 # 0 ProfCode 1 Rank 2 LicNum 3 ActivityStatus 4 Status 5 OrigDate 6 ExpDate
@@ -104,9 +113,11 @@ with open(SRC, "r", encoding="latin-1") as f:
             "e": exp,
             "d": disc,
         }
-        city = city_map.get(lic_key(parts[2].strip()))
+        key = lic_key(parts[2].strip())
+        # manual hand-corrections win, then the official FL DOH record, then NPPES
+        city = overrides.get(key) or doh_city.get(key) or nppes_city.get(key)
         if city:
-            rec["c"] = city           # practice city (omitted when unknown)
+            rec["c"] = city           # city of record (omitted when unknown)
         records.append(rec)
 
 # Sort by last name then first for stable output

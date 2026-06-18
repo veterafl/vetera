@@ -2,36 +2,43 @@
 """
 Join harvested practice city into site/data/dentists.json.
 
-Reads the license -> city map from data/raw/nppes-city.json (built by
-harvest_city.py) and adds a "c" field (city) to each dentist record whose
-license number matches. Records with no match are left without a city — the
-UI simply omits the city line, never guesses.
+Adds a "c" field (city) to each dentist record by license number. City comes
+from the official FL DOH record (data/raw/doh-city.json, built by
+harvest_city_doh.py), with NPPES as a fallback and hand-verified overrides on
+top. Records with no match are left without a city — the UI omits the city
+line, never guesses.
 
-Run AFTER build_dentists.py (which would otherwise drop the city on rebuild).
+build_dentists.py already does this join inline; this script just re-applies it
+to an existing dentists.json without a full rebuild. Same precedence either way.
 """
 import json, os
 
 HERE = os.path.dirname(__file__)
 DENTISTS = os.path.join(HERE, "..", "site", "data", "dentists.json")
-CITY = os.path.join(HERE, "..", "data", "raw", "nppes-city.json")
+CITY_DOH = os.path.join(HERE, "..", "data", "raw", "doh-city.json")
+CITY_NPPES = os.path.join(HERE, "..", "data", "raw", "nppes-city.json")
 OVERRIDES = os.path.join(HERE, "city-overrides.json")
 
 def digits(s):
     return "".join(c for c in str(s) if c.isdigit()).lstrip("0") or "0"
 
-dent = json.load(open(DENTISTS))
-city_map = json.load(open(CITY))
+def load(path):
+    return json.load(open(path)) if os.path.exists(path) else {}
 
-# Manually verified cities from the official FL DOH record win over NPPES and
-# fill NPPES gaps. Keys are license digits; ignore the "_comment" key.
-overrides = {k: v for k, v in json.load(open(OVERRIDES)).items() if not k.startswith("_")}
+dent = json.load(open(DENTISTS))
+doh_city = load(CITY_DOH)
+nppes_city = load(CITY_NPPES)
+
+# Manually verified cities from the official FL DOH record win over everything;
+# ignore the "_comment" key.
+overrides = {k: v for k, v in load(OVERRIDES).items() if not k.startswith("_")}
 
 added = 0
 overridden = 0
 for r in dent:
     r.pop("c", None)  # idempotent re-run
     key = digits(r["lic"])
-    city = overrides.get(key) or city_map.get(key)
+    city = overrides.get(key) or doh_city.get(key) or nppes_city.get(key)
     if overrides.get(key):
         overridden += 1
     if city:
