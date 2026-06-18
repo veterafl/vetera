@@ -1,5 +1,6 @@
 {
   "_comment": "Manually verified FL practice cities from the official FL DOH license record, keyed by license number (digits only, leading zeros stripped). These override / fill in the NPPES-harvested cities. Add entries as gaps are confirmed.",
   "10243": "Wellington",
-  "30487": "Fort Myers"
+  "30487": "Fort Myers",
+  "14937": "Plantation"
 }
