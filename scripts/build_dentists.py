@@ -81,7 +81,18 @@ with open(SRC, "r", encoding="latin-1") as f:
         # "Active" activity AND a good standing label => truly active now
         active_now = is_active and (activity.upper() == "ACTIVE" or status == "Clear")
 
-        disciplined = admin_c or emerg or final_o or (status in DISCIPLINE_STATUSES)
+        # Grade the state's history so the site can word it fairly:
+        #   2 = a real state action (final order, emergency suspension, or a
+        #       current disciplinary status like revoked/suspended/probation)
+        #   1 = an administrative complaint only (may be pending OR dismissed —
+        #       not a finding of wrongdoing, so we say it softly)
+        #   0 = nothing on record
+        if final_o or emerg or (status in DISCIPLINE_STATUSES):
+            disc = 2
+        elif admin_c:
+            disc = 1
+        else:
+            disc = 0
 
         rec = {
             "f": first,
@@ -91,7 +102,7 @@ with open(SRC, "r", encoding="latin-1") as f:
             "a": 1 if active_now else 0,
             "s": label,
             "e": exp,
-            "d": 1 if disciplined else 0,
+            "d": disc,
         }
         city = city_map.get(lic_key(parts[2].strip()))
         if city:

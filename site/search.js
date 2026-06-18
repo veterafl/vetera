@@ -245,7 +245,20 @@
     } else {
       tier = 'neutral';
     }
-    const text = STATUS_SHORT[s] || (rec.s || 'Status unknown');
+    let text = STATUS_SHORT[s] || (rec.s || 'Status unknown');
+
+    // Surface PAST disciplinary history. A dentist can be licensed and in good
+    // standing TODAY yet have been disciplined by the state earlier — that is
+    // exactly what a patient is looking for, so we never hide it behind a green
+    // "active". rec.d: 2 = a real state action (final order / suspension),
+    // 1 = an administrative complaint only (may be unproven, so worded softly).
+    // The official-record button on every card lets people read the details.
+    if (tier === 'good' && rec.d) {
+      tier = 'caution';
+      text = rec.d === 2
+        ? 'Licensed — past disciplinary action on record'
+        : 'Licensed — a complaint is on file';
+    }
     return { tier: tier, text: text };
   }
 
