@@ -14,6 +14,9 @@
   ],
   "rewrites": [
     { "source": "/", "destination": "/site/index.html" },
+    { "source": "/d/:slug", "destination": "/site/d/:slug.html" },
+    { "source": "/dentists", "destination": "/site/dentists/index.html" },
+    { "source": "/dentists/:letter", "destination": "/site/dentists/:letter.html" },
     { "source": "/sample-report", "destination": "/site/sample-report.html" },
     { "source": "/methodology", "destination": "/site/methodology.html" },
     { "source": "/faq", "destination": "/site/faq.html" },

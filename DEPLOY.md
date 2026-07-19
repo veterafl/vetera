@@ -2,6 +2,41 @@
 
 _Written 2026-06-13 by Claude during the QA/launch-prep session. Read this before pushing._
 
+## Live site & traffic  (resolved via Vercel API, 2026-07-13)
+
+**Canonical live URL: https://vetera-six.vercel.app** — served by the Vercel project
+named **`vetera`** (`prj_G6oJy71nCjKF7UH77MsRWbcGvDGg`, team `team_DcGbWDWSS8Cq8T71cSrpfbmT`,
+account `veterafl` / rompak77@yahoo.com). This is the repo-linked project
+(`.vercel/project.json`), it owns the QR-code / Reddit distribution URL, and its Web
+Analytics is **enabled (`hasData: true`, enabled ~2026-06-13)**. Use this URL everywhere.
+
+There **used to be 3 Vercel projects**; the 2 empty duplicates were **deleted 2026-07-13**
+(via API, HTTP 204 each). Only the live one remains:
+
+| Project | Domain | Web Analytics | Status |
+|---|---|---|---|
+| **vetera** | **vetera-six.vercel.app** | enabled, hasData | ✅ the live site (only project left) |
+| ~~vetera-uyrd~~ | ~~vetera-uyrd.vercel.app~~ | no data | 🗑️ deleted 2026-07-13 |
+| ~~vetera-piyv~~ | ~~vetera-piyv.vercel.app~~ | no data | 🗑️ deleted 2026-07-13 |
+
+The duplicates had no analytics data, so the `vetera` project's visitor count **is** the
+site-wide total.
+
+NOTE: `vetera.vercel.app` (plain name) is **NOT owned by this account** — a different
+Vercel user grabbed it. Do not use or link it.
+
+NOTE: Vercel Web Analytics **visitor aggregates are not available via the REST API token**
+(all analytics endpoints 404 — the data is dashboard-session-only). To read the number,
+open the project's Analytics tab in the dashboard. The API token *can* confirm which
+project is live, its domains, and whether analytics is enabled + has data.
+
+### Traffic log (Vercel Analytics → Visitors, read from dashboard)
+
+- **2026-07-13:** 21 visitors (project `vetera` / vetera-six.vercel.app; ≈ site-wide total
+  since duplicates are empty. Analytics enabled ~2026-06-13, so this is roughly all-time).
+
+---
+
 ## TL;DR
 
 Your local `main` is the real, complete site. The GitHub repo (`origin/main`) holds a

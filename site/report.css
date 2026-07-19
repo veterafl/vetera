@@ -1,0 +1,53 @@
+/* Styles for the per-dentist public-record pages (site/d/*.html) and the
+   A–Z directory (site/dentists/*.html). Loaded alongside styles.css.
+   Kept in one shared file so the 29k generated pages stay tiny. */
+
+.rp-wrap { max-width: 680px; margin: 0 auto; padding: 28px 20px 72px; }
+.rp-top { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
+.rp-home { font-weight: 800; font-size: 22px; letter-spacing: -0.5px;
+           text-decoration: none; color: #111; }
+.rp-top a.rp-back { font-size: 14px; color: #2563eb; text-decoration: none; }
+
+.rp-h1 { font-size: 25px; line-height: 1.2; margin: 0 0 4px; }
+.rp-city { color: #555; margin: 0 0 22px; font-size: 15px; }
+
+.rp-status { border: 1px solid #e5e7eb; border-radius: 12px;
+             padding: 18px 20px; margin: 0 0 22px; }
+.rp-status .rp-line { font-size: 18px; font-weight: 700; margin: 0;
+                      display: flex; align-items: center; gap: 10px; }
+.rp-status .rp-sub { margin: 8px 0 0; color: #555; font-size: 14px; }
+.rp-status.sev  { border-color: #dc2626; background: #fef2f2; }
+.rp-status.sev  .rp-line { color: #b91c1c; }
+.rp-status.cau  { border-color: #d97706; background: #fffbeb; }
+.rp-status.cau  .rp-line { color: #b45309; }
+.rp-status.good { border-color: #16a34a; background: #f0fdf4; }
+.rp-status.good .rp-line { color: #15803d; }
+.rp-status.neu  { border-color: #9ca3af; background: #f9fafb; }
+.rp-status.neu  .rp-line { color: #374151; }
+.rp-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.rp-dot.red { background: #dc2626; } .rp-dot.yellow { background: #d97706; }
+.rp-dot.green { background: #16a34a; } .rp-dot.gray { background: #9ca3af; }
+
+.rp-facts { list-style: none; padding: 0; margin: 0 0 24px; }
+.rp-facts li { padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+.rp-facts b { display: inline-block; min-width: 168px; color: #555; font-weight: 600; }
+
+.rp-verify { display: inline-block; padding: 12px 20px; background: #111; color: #fff;
+             border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; }
+.rp-verify-note { color: #666; font-size: 14px; margin: 10px 0 0; }
+
+.rp-note { color: #666; font-size: 13.5px; line-height: 1.65; margin: 28px 0 0;
+           border-top: 1px solid #eee; padding-top: 18px; }
+
+/* Directory (A–Z) */
+.rp-letters { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+.rp-letters a { display: inline-block; min-width: 34px; text-align: center;
+                padding: 8px 6px; border: 1px solid #e5e7eb; border-radius: 8px;
+                text-decoration: none; color: #111; font-weight: 700; }
+.rp-letters a:hover { background: #f3f4f6; }
+.rp-list { list-style: none; padding: 0; margin: 18px 0; columns: 2; column-gap: 28px; }
+.rp-list li { padding: 5px 0; break-inside: avoid; font-size: 14.5px; }
+.rp-list a { color: #2563eb; text-decoration: none; }
+.rp-list a:hover { text-decoration: underline; }
+.rp-list .c { color: #777; }
+@media (max-width: 560px) { .rp-list { columns: 1; } .rp-facts b { min-width: 120px; } }

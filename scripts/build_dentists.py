@@ -14,12 +14,19 @@ import os
 
 SRC = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "dbdumps", "ce_broker", "lic_status.dat")
 OUT = os.path.join(os.path.dirname(__file__), "..", "site", "data", "dentists.json")
-# license -> city, straight from the official FL DOH record
-# (scripts/harvest_city_doh.py). NPPES is only a fallback for the rare
-# dentist FL DOH has no city for (scripts/harvest_city.py).
+# license -> city, straight from the official FL DOH record, and ONLY for
+# dentists FL DOH files under a Florida county (scripts/harvest_city_doh.py) —
+# so appending ", FL" in the UI is always correct. We deliberately do NOT fall
+# back to NPPES: that is an unverified practice address and would reintroduce
+# out-of-state cities wrongly labelled ", FL". Correctness over coverage.
 CITY_DOH = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "doh-city.json")
-CITY_NPPES = os.path.join(os.path.dirname(__file__), "..", "data", "raw", "nppes-city.json")
 CITY_OVERRIDES = os.path.join(os.path.dirname(__file__), "city-overrides.json")
+# FL DOH's "city" is free text: typos ("Maimi"), abbreviations ("Ft Lauderdale",
+# "Jax"), out-of-state mailing cities that survive the county filter ("Brooklyn"),
+# and junk ("*** Confidential ***"). city-normalize.json maps every DOH city
+# string we've seen to its official FL place name — or to null, meaning the
+# string is not a Florida city and the record ships with no city at all.
+CITY_NORMALIZE = os.path.join(os.path.dirname(__file__), "city-normalize.json")
 
 
 def lic_key(s):
@@ -34,8 +41,8 @@ def load_map(path):
     return {}
 
 doh_city = load_map(CITY_DOH)
-nppes_city = load_map(CITY_NPPES)
 overrides = {k: v for k, v in load_map(CITY_OVERRIDES).items() if not k.startswith("_")}
+normalize = {k: v for k, v in load_map(CITY_NORMALIZE).items() if not k.startswith("_")}
 
 # Field order per LicenseStatusMetaData.pdf
 # 0 ProfCode 1 Rank 2 LicNum 3 ActivityStatus 4 Status 5 OrigDate 6 ExpDate
@@ -67,6 +74,7 @@ DISCIPLINE_STATUSES = {"Revoked", "Suspended", "Probation", "Disc Relinquish"}
 
 records = []
 seen = 0
+unreviewed = {}   # doh city strings not in city-normalize.json (new since last review)
 with open(SRC, "r", encoding="latin-1") as f:
     for line in f:
         parts = line.rstrip("\n").split("|")
@@ -114,8 +122,17 @@ with open(SRC, "r", encoding="latin-1") as f:
             "d": disc,
         }
         key = lic_key(parts[2].strip())
-        # manual hand-corrections win, then the official FL DOH record, then NPPES
-        city = overrides.get(key) or doh_city.get(key) or nppes_city.get(key)
+        # manual hand-corrections win, then the official FL DOH (FL-county) record
+        city = overrides.get(key)
+        if not city:
+            city = doh_city.get(key)
+            if city is not None:
+                if city in normalize:
+                    city = normalize[city]   # canonical FL name, or None to drop
+                elif normalize:
+                    # never ship a string no one has reviewed — drop it and warn
+                    unreviewed[city] = unreviewed.get(city, 0) + 1
+                    city = None
         if city:
             rec["c"] = city           # city of record (omitted when unknown)
         records.append(rec)
@@ -137,3 +154,8 @@ print(f"  active & good:      {active}")
 print(f"  flagged discipline: {disc}")
 print(f"  with practice city: {with_city}")
 print(f"output:               {OUT}  ({size_mb:.1f} MB)")
+if unreviewed:
+    top = sorted(unreviewed.items(), key=lambda kv: -kv[1])[:10]
+    print(f"WARNING: {len(unreviewed)} city strings are NOT in city-normalize.json — their "
+          f"records shipped WITHOUT a city. Review and add them (a fresh harvest likely "
+          f"introduced new strings): {top}")
