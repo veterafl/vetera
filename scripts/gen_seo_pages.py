@@ -28,6 +28,7 @@ import re
 import shutil
 import html
 import unicodedata
+import urllib.parse
 
 # ---------------------------------------------------------------------------
 # Config
@@ -288,6 +289,31 @@ def dentist_page(rec, slug):
     sub = discipline_note(rec)
     copy_hint = e(f"{rec.get('l','')}, {rec.get('f','')}".strip(', '))
 
+    # Share + FAKE DOOR (measures paid demand before the paid report exists).
+    # The mailto is the honest "notify me" capture; the click is the signal.
+    notify = ("mailto:veterareports@gmail.com?subject="
+              + urllib.parse.quote(f"Full report request — {name}")
+              + "&body="
+              + urllib.parse.quote(f"I'd like the full background report for {name} "
+                                   f"({canonical}) as soon as it's available."))
+    extras = (
+        '<div class="rp-actions">'
+        '<button type="button" id="rp-share" class="rp-share">🔗 Share this record</button>'
+        '</div>'
+        '<div class="rp-full">'
+        '<button type="button" id="rp-full-btn" class="rp-full-btn" '
+        'aria-expanded="false" aria-controls="rp-full-panel">'
+        'See the full background report →</button>'
+        '<p class="rp-full-sub">Malpractice &amp; civil court records, sedation / '
+        'anesthesia permits, federal sanctions (OIG · SAM · DEA), and the full '
+        'disciplinary order — compiled and sourced.</p>'
+        '<div id="rp-full-panel" class="rp-full-panel" hidden>'
+        f'<p>This deeper report is being built. Want it for <b>{e(name)}</b> the '
+        "moment it's ready?</p>"
+        f'<a class="rp-full-notify" href="{notify}">Email us to be first →</a>'
+        '</div></div>'
+    )
+
     body = (
         head(fr['title'], fr['desc'], canonical, ld)
         + '<main class="rp-wrap">'
@@ -304,13 +330,15 @@ def dentist_page(rec, slug):
           f'<strong>{copy_hint}</strong>. Vetera is independent and shows public '
           'records only — always confirm on the official record that it is the '
           'right person.</p>'
+        + extras
         + '<p class="rp-note">More than one person can share the same name. This '
           'page reflects Florida Department of Health public license data and shows '
           'facts only — no opinions, ratings, or recommendations. Think this is '
           'wrong or out of date? <a href="mailto:veterareports@gmail.com">Tell us</a>.'
           '</p>'
         + '</main>' + FOOTER
-        + '<script defer src="/analytics.js"></script></body></html>'
+        + '<script defer src="/analytics.js"></script>'
+        + '<script defer src="/dpage.js"></script></body></html>'
     )
     return body
 

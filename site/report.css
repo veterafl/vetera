@@ -36,6 +36,27 @@
              border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; }
 .rp-verify-note { color: #666; font-size: 14px; margin: 10px 0 0; }
 
+/* Share + full-report (fake-door) block */
+.rp-actions { margin: 18px 0 0; }
+.rp-share { background: #fff; color: #111; border: 1px solid #d1d5db; border-radius: 8px;
+            padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+            font-family: inherit; }
+.rp-share:hover { background: #f3f4f6; }
+
+.rp-full { margin: 22px 0 0; padding: 20px; border: 1px solid #e5e7eb;
+           border-radius: 12px; background: #f8fafc; }
+.rp-full-btn { display: inline-block; background: #2563eb; color: #fff; border: 0;
+               border-radius: 8px; padding: 12px 20px; font-size: 15px; font-weight: 700;
+               cursor: pointer; font-family: inherit; }
+.rp-full-btn:hover { background: #1d4ed8; }
+.rp-full-sub { color: #555; font-size: 13.5px; line-height: 1.6; margin: 12px 0 0; }
+.rp-full-panel { margin: 14px 0 0; padding: 14px 16px; background: #fff;
+                 border: 1px solid #e5e7eb; border-radius: 8px; }
+.rp-full-panel p { margin: 0 0 10px; font-size: 14.5px; color: #222; }
+.rp-full-notify { display: inline-block; font-weight: 700; color: #2563eb;
+                  text-decoration: none; }
+.rp-full-notify:hover { text-decoration: underline; }
+
 .rp-note { color: #666; font-size: 13.5px; line-height: 1.65; margin: 28px 0 0;
            border-top: 1px solid #eee; padding-top: 18px; }
 

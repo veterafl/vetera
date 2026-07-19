@@ -56,6 +56,15 @@
       .filter(Boolean);
   }
 
+  // Build the /d/<slug> path for a record — MUST match slugify() in
+  // scripts/gen_seo_pages.py (first-last-license, ascii, hyphenated, lower).
+  function dPath(rec) {
+    var s = (rec.f || '') + '-' + (rec.l || '') + '-' + (rec.lic || '');
+    if (s.normalize) s = s.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+    s = s.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase().replace(/-+/g, '-');
+    return '/d/' + s;
+  }
+
   function parseName(raw) {
     const stripped = raw.replace(/^(dr\.?|doctor)\s+/i, '').trim();
     const parts = stripped.split(/\s+/);
@@ -106,6 +115,16 @@
         window.va('event', { name: 'search', result: count > 0 ? 'found' : 'none' });
       }
     } catch (e) { /* analytics must never break search */ }
+  }
+
+  // Generic custom-event helper (open_state_record, share_search, …). Sends no
+  // name/personal data beyond the event label; a no-op if analytics is off.
+  function vaEvent(name, props) {
+    try {
+      if (typeof window.va === 'function') {
+        window.va('event', Object.assign({ name: name }, props || {}));
+      }
+    } catch (e) { /* analytics must never break the page */ }
   }
 
   // ---- Search flow ------------------------------------------------------
@@ -279,17 +298,20 @@
     const headDot = st.tier === 'severe' ? 'red'
       : (st.tier === 'caution' ? 'yellow' : (rec.a === 1 ? 'green' : 'gray'));
 
+    var href = dPath(rec);
     return (
       '<div class="' + cardClass + '">' +
-      '<h4>' + dot(headDot) + escapeHtml(name) + '</h4>' +
+      '<h4>' + dot(headDot) +
+      '<a class="provider-name-link" href="' + href + '">' + escapeHtml(name) + '</a></h4>' +
       (rec.c ? '<p class="provider-city">' + escapeHtml(rec.c) + ', FL</p>' : '') +
       '<p class="fact-line">' + mark(stIcon) +
       '<span>' + escapeHtml(st.text) + '</span></p>' +
       '<div class="provider-actions">' +
-      '<button type="button" class="action-btn action-btn-primary" data-flboard ' +
+      '<a class="action-btn action-btn-primary" href="' + href + '">See full record →</a>' +
+      '<button type="button" class="action-btn" data-flboard ' +
       'data-last="' + escapeHtml(rec.l) + '" data-first="' + escapeHtml(rec.f) + '" ' +
       'data-url="' + FL_DOH_URL + '">' +
-      'See the official Florida state record ↗</button>' +
+      'Official state record ↗</button>' +
       '</div>' +
       '</div>'
     );
@@ -352,6 +374,7 @@
     const first = btn.getAttribute('data-first') || '';
     const url = btn.getAttribute('data-url') || '';
     const toCopy = last + (first ? ', ' + first : '');
+    vaEvent('open_state_record');
 
     function openPortal() {
       window.open(url, '_blank', 'noopener,noreferrer');
@@ -374,4 +397,20 @@
       btn.classList.remove('flboard-btn-copied');
     }, 8000);
   }
+
+  // Auto-run a search from the URL (?q= / ?name= / ?provider=) so shared and
+  // community-seeded links (e.g. /?q=smith) land straight on results instead of
+  // an empty box. Turns every link you post into an instant completed search.
+  (function initFromQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var q = params.get('q') || params.get('name') || params.get('provider') || '';
+      q = q.trim();
+      if (q) {
+        input.value = q;
+        document.body.classList.add('has-results');
+        runSearch(q);
+      }
+    } catch (e) { /* ignore malformed query */ }
+  })();
 })();
