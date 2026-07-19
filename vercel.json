@@ -13,17 +13,17 @@
     }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/site/index.html" },
-    { "source": "/d/:slug", "destination": "/site/d/:slug.html" },
-    { "source": "/dentists", "destination": "/site/dentists/index.html" },
-    { "source": "/dentists/:letter", "destination": "/site/dentists/:letter.html" },
-    { "source": "/sample-report", "destination": "/site/sample-report.html" },
-    { "source": "/methodology", "destination": "/site/methodology.html" },
-    { "source": "/faq", "destination": "/site/faq.html" },
-    { "source": "/request", "destination": "/site/request.html" },
-    { "source": "/terms", "destination": "/site/terms.html" },
-    { "source": "/privacy", "destination": "/site/privacy.html" },
-    { "source": "/thank-you", "destination": "/site/thank-you.html" },
+    { "source": "/", "destination": "/site" },
+    { "source": "/d/:slug", "destination": "/site/d/:slug" },
+    { "source": "/dentists", "destination": "/site/dentists" },
+    { "source": "/dentists/:letter", "destination": "/site/dentists/:letter" },
+    { "source": "/sample-report", "destination": "/site/sample-report" },
+    { "source": "/methodology", "destination": "/site/methodology" },
+    { "source": "/faq", "destination": "/site/faq" },
+    { "source": "/request", "destination": "/site/request" },
+    { "source": "/terms", "destination": "/site/terms" },
+    { "source": "/privacy", "destination": "/site/privacy" },
+    { "source": "/thank-you", "destination": "/site/thank-you" },
     { "source": "/:path*", "destination": "/site/:path*" }
   ]
 }
