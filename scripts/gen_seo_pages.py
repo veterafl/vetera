@@ -35,7 +35,7 @@ import urllib.parse
 # ---------------------------------------------------------------------------
 # Canonical public origin. Change this ONE line if/when a custom domain is added
 # (e.g. "https://vetera.com"), then re-run to refresh canonical tags + sitemap.
-BASE = "https://vetera-six.vercel.app"
+BASE = "https://veterareports.com"
 
 FL_DOH_URL = "https://mqa-internet.doh.state.fl.us/mqasearchservices/home"
 
