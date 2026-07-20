@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vetera Report Template</title>
+  <link rel="stylesheet" href="site/styles.css" />
+  <style>
+    /* Fill-in tokens stand out on screen, look normal once you replace them. */
+    .fill { background: #fff3cd; color: #7a5b00; padding: 0 3px; border-radius: 3px; font-weight: 600; }
+    .howto { max-width: 720px; margin: 24px auto; padding: 18px 22px; border: 2px dashed #d97706;
+             border-radius: 12px; background: #fffbeb; font-size: 14.5px; line-height: 1.6; }
+    .howto h2 { margin: 0 0 8px; font-size: 17px; }
+    .howto code { background: #fff; padding: 1px 5px; border-radius: 4px; }
+    /* The yellow instruction box never prints into the customer's PDF. */
+    @media print { .howto { display: none !important; } .fill { background: none; color: inherit; } }
+    body { background: #f7f7f8; }
+    .report { background: #fff; max-width: 720px; margin: 0 auto 40px; padding: 40px 44px;
+              box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+    .report-table th { text-align: left; white-space: nowrap; padding-right: 16px; vertical-align: top; }
+    .report-table td, .report-table th { padding: 6px 12px 6px 0; vertical-align: top; }
+    .finding.ok { color: #15803d; } .finding.warn { color: #b45309; } .finding.bad { color: #b91c1c; }
+    .report-section { margin: 26px 0; }
+    .report-section h2 { border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+  <div class="howto">
+    <h2>📋 How to make a report (≈20 min) — this yellow box won't print</h2>
+    <ol>
+      <li>Replace every <span class="fill">yellow token</span> with real info (see the source checklist in <code>REPORT_FULFILLMENT.md</code>).</li>
+      <li>For each finding, keep the ✓ (green/ok), ⚠ (amber/warn), or ✕ (red/bad) that matches — delete the others.</li>
+      <li>When done: <b>File → Print → Save as PDF</b> (the yellow box disappears automatically).</li>
+      <li>Email the PDF to the customer. Done.</li>
+    </ol>
+    <p><b>Easiest for your first few:</b> just paste your 4 look-ups to Claude and it'll fill this out for you — you only print &amp; send.</p>
+  </div>
+
+  <article class="report">
+    <header class="report-header">
+      <h1 style="margin:0 0 4px;">Provider Background Report</h1>
+      <p class="report-meta" style="color:#666;">
+        Prepared by Vetera &middot; Report ID: <span class="fill">VTR-[[0001]]</span>
+        &middot; Prepared for: <span class="fill">[[customer name]]</span>
+        &middot; Date: <span class="fill">[[Month Day, Year]]</span>
+      </p>
+    </header>
+
+    <section class="report-section">
+      <h2>1. Provider Identification</h2>
+      <table class="report-table">
+        <tr><th>Name</th><td><span class="fill">[[Dr. Full Name, credential e.g. DMD]]</span></td></tr>
+        <tr><th>Profession</th><td><span class="fill">[[Dentist / Oral &amp; Maxillofacial Surgeon]]</span></td></tr>
+        <tr><th>Practice location</th><td><span class="fill">[[City, FL — from NPI registry]]</span></td></tr>
+        <tr><th>Florida license #</th><td><span class="fill">[[DN#####]]</span></td></tr>
+        <tr><th>NPI #</th><td><span class="fill">[[10-digit NPI]]</span></td></tr>
+      </table>
+    </section>
+
+    <section class="report-section">
+      <h2>2. License Status</h2>
+      <p class="finding ok">✓ <strong><span class="fill">[[Active — in good standing / Inactive / Revoked — pick one]]</span></strong>
+         <span class="fill">[[one line explaining the status]]</span></p>
+      <ul>
+        <li>Issued: <span class="fill">[[date]]</span></li>
+        <li>Expires: <span class="fill">[[date]]</span></li>
+        <li>Restrictions: <span class="fill">[[None / describe]]</span></li>
+        <li>Source: <a href="https://mqa-internet.doh.state.fl.us/mqasearchservices/home" target="_blank" rel="noopener">FL DOH License Verification</a> — checked <span class="fill">[[date]]</span></li>
+      </ul>
+    </section>
+
+    <section class="report-section">
+      <h2>3. Disciplinary History</h2>
+      <!-- IF CLEAN, keep this line and delete the table below -->
+      <p class="finding ok">✓ <strong>No state disciplinary action on record.</strong></p>
+      <!-- IF DISCIPLINED, delete the line above and use this: -->
+      <!--
+      <p class="finding warn">⚠ <strong><span class="fill">[[#]] disciplinary action(s) on record.</span></strong></p>
+      <table class="report-table">
+        <thead><tr><th>Date</th><th>Type</th><th>What happened</th><th>Resolution</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="fill">[[date]]</span></td>
+            <td><span class="fill">[[Board of Dentistry / etc.]]</span></td>
+            <td><span class="fill">[[plain-language summary of the order — facts only]]</span></td>
+            <td><span class="fill">[[fine / probation / suspension / closed]]</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="source">Source: <span class="fill">[[link to the FL DOH final order / discipline doc]]</span> — checked [[date]]</p>
+      -->
+    </section>
+
+    <section class="report-section">
+      <h2>4. Federal Sanctions</h2>
+      <p class="finding ok">✓ <strong><span class="fill">[[No federal sanctions found / see below]]</span></strong></p>
+      <ul>
+        <li>OIG excluded-individuals list (LEIE): <span class="fill">[[Not listed / Listed — date &amp; reason]]</span>
+          — <a href="https://exclusions.oig.hhs.gov/" target="_blank" rel="noopener">exclusions.oig.hhs.gov</a></li>
+        <li>Federal debarment (SAM.gov): <span class="fill">[[Not listed / Listed]]</span>
+          — <a href="https://sam.gov/search/" target="_blank" rel="noopener">sam.gov</a></li>
+      </ul>
+    </section>
+
+    <section class="report-section">
+      <h2>5. Summary</h2>
+      <table class="report-table">
+        <tr><td>License</td><td class="fill">[[Clear / flag]]</td></tr>
+        <tr><td>Disciplinary history</td><td class="fill">[[None / describe]]</td></tr>
+        <tr><td>Federal sanctions</td><td class="fill">[[None found / describe]]</td></tr>
+      </table>
+    </section>
+
+    <section class="report-section">
+      <h2>6. Methodology &amp; Sources</h2>
+      <p>This report is compiled exclusively from public records available through Florida state
+         and U.S. federal government databases. Every finding is a factual statement with a citation
+         to its original source. Vetera provides no opinions, ratings, recommendations, or clinical
+         interpretations. Discuss any findings with your healthcare team or an attorney when appropriate.</p>
+      <p>Data current as of the report date shown above. Public records can change after delivery.</p>
+      <p style="color:#666;font-size:13px;">&copy; 2026 Vetera &middot; Public-record information only &middot;
+         Independent and not affiliated with any government agency &middot; Not medical or legal advice.</p>
+    </section>
+  </article>
+
+</body>
+</html>
