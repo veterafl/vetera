@@ -311,7 +311,8 @@ def dentist_page(rec, slug):
         'record, complete disciplinary history, and a federal-sanctions check '
         '(OIG &amp; SAM) — emailed to you. <strong>Free while in beta.</strong></p>'
         '<div id="rp-full-panel" class="rp-full-panel" hidden>'
-        f'<p>Get the full report on <b>{e(name)}</b> — enter your email and we\'ll send it over.</p>'
+        f'<p>Get the full report on <b>{e(name)}</b> — enter your email and we\'ll '
+        'email it to you within 24–48 hours. Free while in beta.</p>'
         '<form id="rp-request-form" class="rp-request-form">'
         f'<input type="hidden" name="access_key" value="{WEB3FORMS_KEY}">'
         f'<input type="hidden" name="subject" value="Full report request — {e(name)}">'
@@ -325,7 +326,7 @@ def dentist_page(rec, slug):
         '<button type="submit" class="rp-full-btn rp-full-submit">Send my request</button>'
         '</form>'
         '<p id="rp-request-done" class="rp-request-done" hidden>'
-        '✓ Request sent — we\'ll email your report soon. Thank you!</p>'
+        '✓ Request sent — we\'ll email your report within 24–48 hours. Thank you!</p>'
         '</div></div>'
     )
 
