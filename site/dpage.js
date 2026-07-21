@@ -40,9 +40,10 @@
     });
   }
 
-  // 4. FAKE DOOR — measures paid demand before the paid report exists. The click
-  // is the signal (intent_report); the reveal is an honest "coming soon + notify
-  // me", never a dead-end paywall (keeps Vetera's facts-only trust intact).
+  // 4. REQUEST THE FULL REPORT. Opening the form = intent (intent_report). The form
+  // submits reliably to Web3Forms (no mailto — works for everyone, even with no mail
+  // app) and emails the request to veterareports@gmail.com. Completed submit fires
+  // request_submitted. Free during beta; payment added later once demand shows.
   var full = document.getElementById('rp-full-btn');
   var panel = document.getElementById('rp-full-panel');
   if (full && panel) {
@@ -51,6 +52,33 @@
       panel.hidden = false;
       full.setAttribute('aria-expanded', 'true');
     });
+  }
+
+  var reqForm = document.getElementById('rp-request-form');
+  var reqDone = document.getElementById('rp-request-done');
+  if (reqForm) {
+    reqForm.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var btn = reqForm.querySelector('button[type="submit"]');
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(reqForm)
+      }).then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.success) {
+            reqForm.hidden = true;
+            if (reqDone) reqDone.hidden = false;
+            vaEvent('request_submitted', { slug: slug });
+          } else { requestFailed(btn); }
+        }).catch(function () { requestFailed(btn); });
+    });
+  }
+
+  function requestFailed(btn) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send my request'; }
+    alert('Sorry — that didn\'t go through. Please email veterareports@gmail.com directly and we\'ll help.');
   }
 
   function flash(btn, msg) {

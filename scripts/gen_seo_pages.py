@@ -39,6 +39,11 @@ BASE = "https://veterareports.com"
 
 FL_DOH_URL = "https://mqa-internet.doh.state.fl.us/mqasearchservices/home"
 
+# Web3Forms access key — routes the "request a report" form to veterareports@gmail.com.
+# Public by design (it lives in client-side HTML); spam-guarded by honeypot + domain
+# restriction + rate limits. Rotate at web3forms.com if ever abused.
+WEB3FORMS_KEY = "25cf4a8d-db28-46f0-b1db-7b0dd76d21b9"
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = os.path.join(ROOT, "site")
 DATA = os.path.join(SITE, "data", "dentists.json")
@@ -289,13 +294,11 @@ def dentist_page(rec, slug):
     sub = discipline_note(rec)
     copy_hint = e(f"{rec.get('l','')}, {rec.get('f','')}".strip(', '))
 
-    # Share + FAKE DOOR (measures paid demand before the paid report exists).
-    # The mailto is the honest "notify me" capture; the click is the signal.
-    notify = ("mailto:veterareports@gmail.com?subject="
-              + urllib.parse.quote(f"Full report request — {name}")
-              + "&body="
-              + urllib.parse.quote(f"I'd like the full background report for {name} "
-                                   f"({canonical}) as soon as it's available."))
+    # Share + REQUEST FORM. Reliable Web3Forms capture that replaces the old mailto
+    # (which silently failed for anyone without a mail app). Free during beta; each
+    # submission emails veterareports@gmail.com with subject "Full report request — …"
+    # so the founder's Gmail filter files it under Report Requests. Payment comes
+    # later, once real demand shows up.
     extras = (
         '<div class="rp-actions">'
         '<button type="button" id="rp-share" class="rp-share">🔗 Share this record</button>'
@@ -303,14 +306,26 @@ def dentist_page(rec, slug):
         '<div class="rp-full">'
         '<button type="button" id="rp-full-btn" class="rp-full-btn" '
         'aria-expanded="false" aria-controls="rp-full-panel">'
-        'See the full background report →</button>'
-        '<p class="rp-full-sub">Malpractice &amp; civil court records, sedation / '
-        'anesthesia permits, federal sanctions (OIG · SAM · DEA), and the full '
-        'disciplinary order — compiled and sourced.</p>'
+        'Request the full background report →</button>'
+        '<p class="rp-full-sub">A compiled, sourced PDF: the full Florida license '
+        'record, complete disciplinary history, and a federal-sanctions check '
+        '(OIG &amp; SAM) — emailed to you. <strong>Free while in beta.</strong></p>'
         '<div id="rp-full-panel" class="rp-full-panel" hidden>'
-        f'<p>This deeper report is being built. Want it for <b>{e(name)}</b> the '
-        "moment it's ready?</p>"
-        f'<a class="rp-full-notify" href="{notify}">Email us to be first →</a>'
+        f'<p>Get the full report on <b>{e(name)}</b> — enter your email and we\'ll send it over.</p>'
+        '<form id="rp-request-form" class="rp-request-form">'
+        f'<input type="hidden" name="access_key" value="{WEB3FORMS_KEY}">'
+        f'<input type="hidden" name="subject" value="Full report request — {e(name)}">'
+        f'<input type="hidden" name="provider" value="{e(name)} (FL lic {e(lic)})">'
+        f'<input type="hidden" name="page" value="{e(canonical)}">'
+        '<input type="hidden" name="from_name" value="Vetera request form">'
+        '<input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">'
+        '<input type="email" name="email" required placeholder="Your email" class="rp-input">'
+        '<textarea name="note" rows="2" class="rp-input" '
+        'placeholder="Anything specific to look into? (optional)"></textarea>'
+        '<button type="submit" class="rp-full-btn rp-full-submit">Send my request</button>'
+        '</form>'
+        '<p id="rp-request-done" class="rp-request-done" hidden>'
+        '✓ Request sent — we\'ll email your report soon. Thank you!</p>'
         '</div></div>'
     )
 

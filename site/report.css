@@ -57,6 +57,14 @@
                   text-decoration: none; }
 .rp-full-notify:hover { text-decoration: underline; }
 
+/* Request-a-report form (inside the full-report panel) */
+.rp-request-form { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 0; }
+.rp-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px;
+            border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; }
+.rp-input:focus { outline: 2px solid #2563eb; outline-offset: 0; border-color: #2563eb; }
+.rp-full-submit { align-self: flex-start; }
+.rp-request-done { margin: 8px 0 0; font-weight: 700; color: #15803d; }
+
 .rp-note { color: #666; font-size: 13.5px; line-height: 1.65; margin: 28px 0 0;
            border-top: 1px solid #eee; padding-top: 18px; }
 
