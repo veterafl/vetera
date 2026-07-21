@@ -1,42 +1,43 @@
-# How to fulfill a Vetera report (v1) — ~20 minutes
+# How to fulfill a Vetera report (v1 — "public records package")
 
-When a customer pays, you'll get: their **email** + **which dentist**. Then do this.
+**The model:** gather the available public records for a provider from official government
+sites, and hand the customer the records + exact source links. **No summaries, no opinions,
+no interpretation** — the official documents speak for themselves. ~15–20 min per report.
 
-## The look-up checklist (do these 4 in order)
+When a request comes in you'll have: the customer's **email** + **which provider**.
+
+## The 5 sources to gather (in order)
 
 **1. FL DOH license record** → https://mqa-internet.doh.state.fl.us/mqasearchservices/home
-   - Search the dentist's last, first name. Open their record.
-   - Grab: **license #, status, issue date, expiration, any restrictions**, and whether there's any **discipline** (final orders / complaints). If disciplined, download/open the order and read what happened.
-   - ⏱ ~5 min (longer if disciplined).
+   - Search Last, First → open the record. Note: license #, status, expiration, city.
 
-**2. Federal exclusions (OIG)** → https://exclusions.oig.hhs.gov/
-   - Search first + last name. Note **"Not listed"** or the listing details.
-   - ⏱ ~2 min.
+**2. FL DOH enforcement / disciplinary actions** → https://mqa-internet.doh.state.fl.us/MQASearchServices/EnforcementActionsPractitioner
+   - Profession "Dentistry", search the name. If there's a case, open the official **Final
+     Order / Settlement PDF** and **download it to attach** (don't summarize it — just include it).
+   - If nothing: note "none on file."
 
-**3. Federal debarment (SAM.gov)** → https://sam.gov/search/
-   - Search the name. Note **"Not listed"** or details.
-   - ⏱ ~2 min.
+**3. Federal exclusions — OIG (LEIE)** → https://exclusions.oig.hhs.gov/
+   - Search the name → "not listed" or the listing.
 
-**4. NPI / practice info** → https://npiregistry.cms.gov/search
-   - Search the name (State = FL). Grab **NPI #, practice city, specialty**.
-   - ⏱ ~3 min.
+**4. Federal debarment — SAM.gov** → https://sam.gov/search/
+   - Search the name → "not listed" or the listing.
 
-## Then make the PDF
+**5. Provider profile / NPI — NPPES** → https://npiregistry.cms.gov/search
+   - Search the name (State = FL) → grab the NPI + practice city.
 
-**Option A — do it yourself:** open `report-template.html`, replace every yellow token with what you found, delete the ✓/⚠/✕ that don't apply, then **File → Print → Save as PDF**. Email it to the customer.
+## Then assemble the package
+1. Open **`report-template.html`** (it's a filled Berley example — use it as your model).
+2. Replace the highlighted bits with the new provider's info; for each record, set the "found"
+   line + the source link/steps.
+3. **Attach any downloadable official PDFs** (e.g., the FL DOH Final Order).
+4. **File → Print → Save as PDF**, then email the PDF (+ any attachments) to the customer.
 
-**Option B — easiest for your first few:** paste your 4 look-ups to Claude and say "fill the report template." Claude writes the finished report; you just save as PDF + email.
-
-## Rules (keep Vetera's trust)
-- **Facts only.** No opinions, no "this dentist is good/bad." Just what the records say + the source.
-- **Cite every finding** (the source links are already in the template).
-- If you can't verify something, say "not found in public records" — never guess.
+## Rules (this is what makes it trustworthy)
+- **Gather & link only.** Never write your own summary of what a document says, and never give
+  an opinion ("good/bad dentist"). Point to the official record; let them read it.
+- **Every item shows its official source.**
+- If you can't find something, say "not found in public records" — never guess.
 - Keep the disclaimer (it's in the template).
 
-## What v1 does NOT include (yet — future "Premium" tier)
-- Malpractice / civil court records (needs slow county-by-county searches)
-- Sedation / anesthesia permit lookup
-Add these later once v1 is selling and you can charge more.
-
-## Turnaround promise to customers
+## Turnaround
 Aim to deliver within **24 hours**. Under-promise, over-deliver.

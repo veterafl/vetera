@@ -3,125 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vetera Report Template</title>
-  <link rel="stylesheet" href="site/styles.css" />
+  <title>Vetera — Public Records Package (template)</title>
   <style>
-    /* Fill-in tokens stand out on screen, look normal once you replace them. */
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+           color: #1a1a1a; background: #f4f5f7; margin: 0; padding: 24px; line-height: 1.55; }
+    .doc { max-width: 720px; margin: 0 auto 40px; background: #fff; padding: 44px 48px;
+           box-shadow: 0 1px 8px rgba(0,0,0,.09); }
+    h1 { font-size: 24px; margin: 0 0 2px; }
+    .meta { color: #666; font-size: 13.5px; margin: 0 0 22px; }
+    .provider { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px;
+                padding: 14px 18px; margin: 0 0 22px; }
+    .provider b { display: inline-block; min-width: 130px; color: #555; font-weight: 600; }
+    .intro { font-size: 14px; color: #333; border-left: 3px solid #2563eb; padding: 4px 0 4px 14px; margin: 0 0 26px; }
+    .rec { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin: 0 0 14px; }
+    .rec h2 { font-size: 16px; margin: 0 0 6px; }
+    .rec .found { font-weight: 600; margin: 0 0 8px; }
+    .rec .src { font-size: 13.5px; color: #444; margin: 0; }
+    .rec .src a { color: #2563eb; word-break: break-word; }
+    .steps { font-size: 13px; color: #555; margin: 6px 0 0; padding-left: 18px; }
+    .ok { color: #15803d; } .flag { color: #b45309; }
+    .foot { font-size: 12.5px; color: #666; border-top: 1px solid #eee; padding-top: 16px; margin-top: 26px; }
     .fill { background: #fff3cd; color: #7a5b00; padding: 0 3px; border-radius: 3px; font-weight: 600; }
-    .howto { max-width: 720px; margin: 24px auto; padding: 18px 22px; border: 2px dashed #d97706;
-             border-radius: 12px; background: #fffbeb; font-size: 14.5px; line-height: 1.6; }
-    .howto h2 { margin: 0 0 8px; font-size: 17px; }
-    .howto code { background: #fff; padding: 1px 5px; border-radius: 4px; }
-    /* The yellow instruction box never prints into the customer's PDF. */
-    @media print { .howto { display: none !important; } .fill { background: none; color: inherit; } }
-    body { background: #f7f7f8; }
-    .report { background: #fff; max-width: 720px; margin: 0 auto 40px; padding: 40px 44px;
-              box-shadow: 0 1px 6px rgba(0,0,0,.08); }
-    .report-table th { text-align: left; white-space: nowrap; padding-right: 16px; vertical-align: top; }
-    .report-table td, .report-table th { padding: 6px 12px 6px 0; vertical-align: top; }
-    .finding.ok { color: #15803d; } .finding.warn { color: #b45309; } .finding.bad { color: #b91c1c; }
-    .report-section { margin: 26px 0; }
-    .report-section h2 { border-bottom: 2px solid #eee; padding-bottom: 6px; }
+    .howto { max-width: 720px; margin: 0 auto 22px; padding: 16px 20px; border: 2px dashed #d97706;
+             border-radius: 12px; background: #fffbeb; font-size: 14px; }
+    .howto h3 { margin: 0 0 6px; }
+    @media print { .howto { display: none !important; } .fill { background: none; color: inherit; }
+                   body { background: #fff; padding: 0; } .doc { box-shadow: none; margin: 0; } }
   </style>
 </head>
 <body>
 
   <div class="howto">
-    <h2>📋 How to make a report (≈20 min) — this yellow box won't print</h2>
-    <ol>
-      <li>Replace every <span class="fill">yellow token</span> with real info (see the source checklist in <code>REPORT_FULFILLMENT.md</code>).</li>
-      <li>For each finding, keep the ✓ (green/ok), ⚠ (amber/warn), or ✕ (red/bad) that matches — delete the others.</li>
-      <li>When done: <b>File → Print → Save as PDF</b> (the yellow box disappears automatically).</li>
-      <li>Email the PDF to the customer. Done.</li>
-    </ol>
-    <p><b>Easiest for your first few:</b> just paste your 4 look-ups to Claude and it'll fill this out for you — you only print &amp; send.</p>
+    <h3>📋 How to use this (this box won't print)</h3>
+    <b>This is a filled example (Dr. Joel Berley).</b> To make a new report: replace the
+    <span class="fill">highlighted</span> bits with the new provider's info, update each record's
+    "found" line + source link/steps, then <b>File → Print → Save as PDF</b> and email it.
+    Where a record is a downloadable file (e.g. a FL DOH Final Order PDF), download it and attach it too.
+    Rule: <b>gather &amp; link only — never summarize or give opinions.</b>
   </div>
 
-  <article class="report">
-    <header class="report-header">
-      <h1 style="margin:0 0 4px;">Provider Background Report</h1>
-      <p class="report-meta" style="color:#666;">
-        Prepared by Vetera &middot; Report ID: <span class="fill">VTR-[[0001]]</span>
-        &middot; Prepared for: <span class="fill">[[customer name]]</span>
-        &middot; Date: <span class="fill">[[Month Day, Year]]</span>
-      </p>
-    </header>
+  <article class="doc">
+    <h1>Public Records Package</h1>
+    <p class="meta">Prepared by Vetera &middot; Report ID <span class="fill">VTR-0001</span>
+       &middot; <span class="fill">July 21, 2026</span></p>
 
-    <section class="report-section">
-      <h2>1. Provider Identification</h2>
-      <table class="report-table">
-        <tr><th>Name</th><td><span class="fill">[[Dr. Full Name, credential e.g. DMD]]</span></td></tr>
-        <tr><th>Profession</th><td><span class="fill">[[Dentist / Oral &amp; Maxillofacial Surgeon]]</span></td></tr>
-        <tr><th>Practice location</th><td><span class="fill">[[City, FL — from NPI registry]]</span></td></tr>
-        <tr><th>Florida license #</th><td><span class="fill">[[DN#####]]</span></td></tr>
-        <tr><th>NPI #</th><td><span class="fill">[[10-digit NPI]]</span></td></tr>
-      </table>
-    </section>
+    <div class="provider">
+      <div><b>Provider</b> <span class="fill">Joel A. Berley, DMD</span></div>
+      <div><b>Profession</b> <span class="fill">Dentist — Oral &amp; Maxillofacial Surgery</span></div>
+      <div><b>FL License #</b> <span class="fill">19218</span></div>
+      <div><b>Location on file</b> <span class="fill">Hollywood, FL</span></div>
+    </div>
 
-    <section class="report-section">
-      <h2>2. License Status</h2>
-      <p class="finding ok">✓ <strong><span class="fill">[[Active — in good standing / Inactive / Revoked — pick one]]</span></strong>
-         <span class="fill">[[one line explaining the status]]</span></p>
-      <ul>
-        <li>Issued: <span class="fill">[[date]]</span></li>
-        <li>Expires: <span class="fill">[[date]]</span></li>
-        <li>Restrictions: <span class="fill">[[None / describe]]</span></li>
-        <li>Source: <a href="https://mqa-internet.doh.state.fl.us/mqasearchservices/home" target="_blank" rel="noopener">FL DOH License Verification</a> — checked <span class="fill">[[date]]</span></li>
-      </ul>
-    </section>
+    <p class="intro">This package gathers the available public records for the provider above from
+      official U.S. federal and Florida state government sources. Vetera <b>collects and organizes</b>
+      these records only — it adds no opinions, ratings, or interpretations. Open each official record
+      using the link or steps provided and read the primary source yourself.</p>
 
-    <section class="report-section">
-      <h2>3. Disciplinary History</h2>
-      <!-- IF CLEAN, keep this line and delete the table below -->
-      <p class="finding ok">✓ <strong>No state disciplinary action on record.</strong></p>
-      <!-- IF DISCIPLINED, delete the line above and use this: -->
-      <!--
-      <p class="finding warn">⚠ <strong><span class="fill">[[#]] disciplinary action(s) on record.</span></strong></p>
-      <table class="report-table">
-        <thead><tr><th>Date</th><th>Type</th><th>What happened</th><th>Resolution</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="fill">[[date]]</span></td>
-            <td><span class="fill">[[Board of Dentistry / etc.]]</span></td>
-            <td><span class="fill">[[plain-language summary of the order — facts only]]</span></td>
-            <td><span class="fill">[[fine / probation / suspension / closed]]</span></td>
-          </tr>
-        </tbody>
-      </table>
-      <p class="source">Source: <span class="fill">[[link to the FL DOH final order / discipline doc]]</span> — checked [[date]]</p>
-      -->
-    </section>
+    <div class="rec">
+      <h2>1. Florida license record</h2>
+      <p class="found">On file — status: <span class="fill">Licensed, has outstanding obligations (active; expires 02/28/2028)</span></p>
+      <p class="src">Official source: <a href="https://mqa-internet.doh.state.fl.us/mqasearchservices/home">FL DOH License Verification</a></p>
+      <ol class="steps">
+        <li>Open the link above → search Last name "<span class="fill">Berley</span>", First "<span class="fill">Joel</span>".</li>
+        <li>Open the record for license #<span class="fill">19218</span> to see the live official status.</li>
+      </ol>
+    </div>
 
-    <section class="report-section">
-      <h2>4. Federal Sanctions</h2>
-      <p class="finding ok">✓ <strong><span class="fill">[[No federal sanctions found / see below]]</span></strong></p>
-      <ul>
-        <li>OIG excluded-individuals list (LEIE): <span class="fill">[[Not listed / Listed — date &amp; reason]]</span>
-          — <a href="https://exclusions.oig.hhs.gov/" target="_blank" rel="noopener">exclusions.oig.hhs.gov</a></li>
-        <li>Federal debarment (SAM.gov): <span class="fill">[[Not listed / Listed]]</span>
-          — <a href="https://sam.gov/search/" target="_blank" rel="noopener">sam.gov</a></li>
-      </ul>
-    </section>
+    <div class="rec">
+      <h2>2. Florida disciplinary &amp; enforcement actions</h2>
+      <p class="found flag">Enforcement action(s) ON FILE — read the official order at the source below.</p>
+      <p class="src">Official source: <a href="https://mqa-internet.doh.state.fl.us/MQASearchServices/EnforcementActionsPractitioner">FL DOH Enforcement Actions</a></p>
+      <ol class="steps">
+        <li>Open the link → Profession "Dentistry", Last "<span class="fill">Berley</span>", First "<span class="fill">Joel</span>".</li>
+        <li>Click the case number to open the official <b>Final Order / Settlement PDF</b> — the full facts are in that document.</li>
+        <li><i>(If downloadable, attach that PDF to this package.)</i></li>
+      </ol>
+    </div>
 
-    <section class="report-section">
-      <h2>5. Summary</h2>
-      <table class="report-table">
-        <tr><td>License</td><td class="fill">[[Clear / flag]]</td></tr>
-        <tr><td>Disciplinary history</td><td class="fill">[[None / describe]]</td></tr>
-        <tr><td>Federal sanctions</td><td class="fill">[[None found / describe]]</td></tr>
-      </table>
-    </section>
+    <div class="rec">
+      <h2>3. Federal exclusions — OIG (LEIE)</h2>
+      <p class="found ok"><span class="fill">Not listed</span></p>
+      <p class="src">Official source: <a href="https://exclusions.oig.hhs.gov/">exclusions.oig.hhs.gov</a> — search the provider's name to confirm.</p>
+    </div>
 
-    <section class="report-section">
-      <h2>6. Methodology &amp; Sources</h2>
-      <p>This report is compiled exclusively from public records available through Florida state
-         and U.S. federal government databases. Every finding is a factual statement with a citation
-         to its original source. Vetera provides no opinions, ratings, recommendations, or clinical
-         interpretations. Discuss any findings with your healthcare team or an attorney when appropriate.</p>
-      <p>Data current as of the report date shown above. Public records can change after delivery.</p>
-      <p style="color:#666;font-size:13px;">&copy; 2026 Vetera &middot; Public-record information only &middot;
-         Independent and not affiliated with any government agency &middot; Not medical or legal advice.</p>
-    </section>
+    <div class="rec">
+      <h2>4. Federal debarment — SAM.gov</h2>
+      <p class="found"><span class="fill">Search to confirm (typically: not listed)</span></p>
+      <p class="src">Official source: <a href="https://sam.gov/search/">sam.gov/search</a> — search the provider's name.</p>
+    </div>
+
+    <div class="rec">
+      <h2>5. Provider profile &amp; NPI — NPPES</h2>
+      <p class="found">NPI: <span class="fill">[look up &amp; paste]</span></p>
+      <p class="src">Official source: <a href="https://npiregistry.cms.gov/search">npiregistry.cms.gov</a> — search "<span class="fill">Joel Berley</span>", State FL.</p>
+    </div>
+
+    <p class="foot">
+      Compiled from public U.S. federal and Florida state government records as of the date above.
+      Vetera gathers and links to official records only — it provides no opinions, ratings, recommendations,
+      or clinical/legal interpretation. Public records can change after delivery. Not medical or legal advice.
+      &copy; 2026 Vetera &middot; Independent and not affiliated with any government agency.
+    </p>
   </article>
 
 </body>
