@@ -6,7 +6,19 @@ no interpretation** — the official documents speak for themselves. ~15–20 mi
 
 When a request comes in you'll have: the customer's **email** + **which provider**.
 
-## The 5 sources to gather (in order)
+## ⚡ Fastest way — auto-draft it first
+Run the auto-draft tool; it fills most of the report from data we already have:
+```
+python3 scripts/gen_report.py "First Last"      (or:  --lic 19218)
+```
+It writes `report-drafts/<name>.html` (already filled with license status, the
+disciplinary flag, and the OIG check) and opens with **`open report-drafts/<name>.html`**.
+Then you only do the manual bits below: open the FL DOH order (if flagged) + look up the
+NPI, fill the yellow slots, **Print → Save as PDF**, and email it. (Or just ask Claude:
+"draft a report for [name]".) The yellow boxes — including any curated disciplinary lead
+you must verify — don't print.
+
+## The 5 sources (the tool links these; you open/verify them)
 
 **1. FL DOH license record** → https://mqa-internet.doh.state.fl.us/mqasearchservices/home
    - Search Last, First → open the record. Note: license #, status, expiration, city.
