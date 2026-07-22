@@ -13,10 +13,18 @@ python3 scripts/gen_report.py "First Last"      (or:  --lic 19218)
 ```
 It writes `report-drafts/<name>.html` (already filled with license status, the
 disciplinary flag, and the OIG check) and opens with **`open report-drafts/<name>.html`**.
-Then you only do the manual bits below: open the FL DOH order (if flagged) + look up the
-NPI, fill the yellow slots, **Print → Save as PDF**, and email it. (Or just ask Claude:
-"draft a report for [name]".) The yellow boxes — including any curated disciplinary lead
-you must verify — don't print.
+
+**When Claude drafts it** ("draft a report for [name]"), Claude also **web-searches the
+provider's NPI + specialty** (the direct NPPES feed is blocked in the tool's runtime, but
+web search reaches it) and passes them in, so those fill too:
+```
+python3 scripts/gen_report.py "First Last" --npi 1831402171 --specialty "Oral & Maxillofacial Surgery"
+```
+That leaves only ONE manual step: open the FL DOH order PDF (if a disciplinary action is
+flagged) and attach it. Then fill any remaining yellow slots, **Print → Save as PDF**, email.
+Note: the NPI comes from a third-party NPPES index — the report keeps the official NPPES link
+so it can be confirmed on the primary source. The yellow boxes (including any curated
+disciplinary lead you must verify against the official order) don't print.
 
 ## The 5 sources (the tool links these; you open/verify them)
 

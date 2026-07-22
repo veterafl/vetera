@@ -139,7 +139,7 @@ h1 { font-size: 24px; margin: 0 0 2px; } .meta { color: #666; font-size: 13.5px;
 """
 
 
-def render(d, oig_hits, leads):
+def render(d, oig_hits, leads, npi=None, specialty=None):
     name = title_case(" ".join(p for p in [d.get("f"), d.get("n"), d.get("l")] if p).strip())
     lic = d.get("lic") or ""
     city = title_case(d.get("c") or "")
@@ -185,6 +185,14 @@ def render(d, oig_hits, leads):
             'Open the official FL DOH order (link above), confirm it, then just LINK the order.<br><br>'
             + "<br><br>".join(parts) + '</div>')
 
+    prof_html = (e(specialty) if specialty
+                 else '<span class="fill">Dentist [confirm oral surgeon via NPI if relevant]</span>')
+    if npi:
+        npi_html = ('NPI: <b>' + e(npi) + '</b>' + (' · ' + e(specialty) if specialty else '')
+                    + ' <span style="color:#666;font-size:12px">(from an NPPES index — confirm on the official page)</span>')
+    else:
+        npi_html = 'NPI: <span class="fill">[look up &amp; paste]</span>'
+
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vetera — Public Records Package · {e(name)}</title><style>{STYLE}</style></head><body>
@@ -196,7 +204,7 @@ then File → Print → Save as PDF and email it. Facts only — link the offici
   <p class="meta">Prepared by Vetera · Report ID <span class="fill">VTR-0000</span> · <span class="fill">[date]</span></p>
   <div class="provider">
     <div><b>Provider</b> {e(name)}</div>
-    <div><b>Profession</b> <span class="fill">Dentist [confirm oral surgeon via NPI if relevant]</span></div>
+    <div><b>Profession</b> {prof_html}</div>
     <div><b>FL License #</b> {e(lic)}</div>
     <div><b>Location on file</b> {e(city + ', FL') if city else '<span class="fill">[see NPI]</span>'}</div>
   </div>
@@ -228,7 +236,7 @@ then File → Print → Save as PDF and email it. Facts only — link the offici
     <p class="src">Official source: <a href="{SAM_URL}">sam.gov/search</a> — search the provider's name.</p></div>
 
   <div class="rec"><h2>5. Provider profile &amp; NPI — NPPES</h2>
-    <p class="found">NPI: <span class="fill">[look up &amp; paste]</span></p>
+    <p class="found">{npi_html}</p>
     <p class="src">Official source: <a href="{NPI_URL}">npiregistry.cms.gov</a> — search "{e(name)}", State FL.</p></div>
 
   <p class="foot">Compiled from public U.S. federal and Florida state government records. Vetera gathers and
@@ -240,9 +248,13 @@ then File → Print → Save as PDF and email it. Facts only — link the offici
 
 def main():
     args = sys.argv[1:]
-    lic = None
-    if "--lic" in args:
-        i = args.index("--lic"); lic = args[i + 1]; del args[i:i + 2]
+    lic = npi_arg = specialty_arg = None
+    for flag in ("--lic", "--npi", "--specialty"):
+        if flag in args:
+            i = args.index(flag); val = args[i + 1]; del args[i:i + 2]
+            if flag == "--lic": lic = val
+            elif flag == "--npi": npi_arg = val
+            else: specialty_arg = val
     query = " ".join(args).strip()
     if not query and not lic:
         print('Usage: python3 scripts/gen_report.py "First Last"   OR   --lic 19218'); return
@@ -268,7 +280,7 @@ def main():
     slug = slugify(f"{d.get('f','')}-{d.get('l','')}-{d.get('lic','')}")
     out = os.path.join(OUTDIR, slug + ".html")
     with open(out, "w", encoding="utf-8") as f:
-        f.write(render(d, oig_hits, leads))
+        f.write(render(d, oig_hits, leads, npi=npi_arg, specialty=specialty_arg))
     print(f"✓ Draft written: {out}")
     print(f"  Provider : {title_case((d.get('f','')+' '+d.get('l','')))}  (lic {d.get('lic')}, {d.get('c','')})")
     print(f"  License  : {d.get('s')}")
