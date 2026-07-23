@@ -32,8 +32,8 @@
 .rp-facts li { padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
 .rp-facts b { display: inline-block; min-width: 168px; color: #555; font-weight: 600; }
 
-.rp-verify { display: inline-block; padding: 12px 20px; background: #111; color: #fff;
-             border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; }
+.rp-verify { display: inline-block; color: #2563eb; text-decoration: underline;
+             font-weight: 600; font-size: 15px; margin: 2px 0 0; }
 .rp-verify-note { color: #666; font-size: 14px; margin: 10px 0 0; }
 
 /* Share + full-report (fake-door) block */
@@ -67,6 +67,18 @@
 
 .rp-note { color: #666; font-size: 13.5px; line-height: 1.65; margin: 28px 0 0;
            border-top: 1px solid #eee; padding-top: 18px; }
+
+/* "Other Florida dentist records" — internal links between dentist pages so
+   Google can crawl the ~30k pages (they were previously orphaned) */
+.rp-related { margin: 30px 0 0; border-top: 1px solid #eee; padding-top: 20px; }
+.rp-related-h { font-size: 15px; color: #444; margin: 0 0 4px; font-weight: 700; }
+.rp-related-sub { font-size: 13px; color: #777; margin: 14px 0 6px; font-weight: 600; }
+.rp-related-list { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 24px; }
+.rp-related-list li { padding: 4px 0; break-inside: avoid; font-size: 14px; }
+.rp-related-list a { color: #2563eb; text-decoration: none; }
+.rp-related-list a:hover { text-decoration: underline; }
+.rp-related-list .c { color: #999; }
+@media (max-width: 560px) { .rp-related-list { columns: 1; } }
 
 /* Directory (A–Z) */
 .rp-letters { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }

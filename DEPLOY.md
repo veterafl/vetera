@@ -44,7 +44,7 @@ Your local `main` is the real, complete site. The GitHub repo (`origin/main`) ho
 To deploy, overwrite GitHub with local (one force-push), then let Vercel build.
 
 ```bash
-# from /Users/floricaiqbal/Desktop/Buisness
+# from the project root
 git push --force origin main
 ```
 

@@ -2,8 +2,9 @@
 // against the shipped dentists.json using the installed Chromium.
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
+import os from 'node:os';
 
-const EXEC = '/Users/floricaiqbal/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const EXEC = process.env.CHROME_PATH || `${os.homedir()}/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing`;
 const BASE = 'http://localhost:8848/index.html';
 const OUT = '/tmp/vqa';
 fs.mkdirSync(OUT, { recursive: true });

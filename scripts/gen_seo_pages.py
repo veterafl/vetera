@@ -253,7 +253,60 @@ def discipline_note(rec):
     return ''
 
 
-def dentist_page(rec, slug):
+def neighbors(items, self_slug, n):
+    """Up to n other (rec, slug) entries via a wrapping window that starts just
+    after this record. Because every page links forward to its n neighbours, the
+    ~30k pages form a dense ring — every page is both linking and linked-to, which
+    is what lets Google discover and crawl them (they used to be orphans)."""
+    if len(items) <= 1:
+        return []
+    idx = 0
+    for i, (r, s) in enumerate(items):
+        if s == self_slug:
+            idx = i
+            break
+    out, k = [], 1
+    while len(out) < n and k < len(items):
+        out.append(items[(idx + k) % len(items)])
+        k += 1
+    return out
+
+
+def related_block(rec, slug, city_index, letter_buckets):
+    """A 'People also look up' block: links to other dentists in the same city and
+    with the same last-name initial. Adds internal links + unique content per page."""
+    city = (rec.get('c') or '').strip()
+    blocks = []
+    if city:
+        same_city = neighbors(city_index.get(city.lower(), []), slug, 6)
+        if same_city:
+            lis = ''.join(f'<li><a href="/d/{s}">{e(full_name(r))}</a></li>'
+                          for r, s in same_city)
+            blocks.append(
+                f'<p class="rp-related-sub">Other dentists in {e(title_case(city))}, FL</p>'
+                f'<ul class="rp-related-list">{lis}</ul>')
+    L = letter_of(rec)
+    same_ltr = neighbors(letter_buckets.get(L, []), slug, 6)
+    if same_ltr:
+        disp = '0–9' if L == '#' else L
+        parts = []
+        for r, s in same_ltr:
+            rc = (r.get('c') or '').strip()
+            loc = f' <span class="c">— {e(title_case(rc))}, FL</span>' if rc else ''
+            parts.append(f'<li><a href="/d/{s}">{e(full_name(r))}</a>{loc}</li>')
+        blocks.append(
+            f'<p class="rp-related-sub">More Florida dentists — last name {disp}</p>'
+            f'<ul class="rp-related-list">{"".join(parts)}</ul>')
+    if not blocks:
+        return ''
+    return ('<nav class="rp-related" aria-label="Other Florida dentist records">'
+            '<h2 class="rp-related-h">Other Florida dentist records</h2>'
+            + ''.join(blocks) + '</nav>')
+
+
+def dentist_page(rec, slug, city_index=None, letter_buckets=None):
+    city_index = city_index or {}
+    letter_buckets = letter_buckets or {}
     lic = rec.get('lic') or ''
     exp = rec.get('e') or ''
     tier, text = status_info(rec)
@@ -306,10 +359,12 @@ def dentist_page(rec, slug):
         '<div class="rp-full">'
         '<button type="button" id="rp-full-btn" class="rp-full-btn" '
         'aria-expanded="false" aria-controls="rp-full-panel">'
-        'Request the full background report →</button>'
+        'Get the full report — free →</button>'
         '<p class="rp-full-sub">A compiled, sourced PDF: the full Florida license '
         'record, complete disciplinary history, and a federal-sanctions check '
-        '(OIG &amp; SAM) — emailed to you. <strong>Free while in beta.</strong></p>'
+        '(OIG &amp; SAM) — emailed to you. '
+        '<a href="/sample-report">See a sample ↗</a>. '
+        '<strong>Free while in beta.</strong></p>'
         '<div id="rp-full-panel" class="rp-full-panel" hidden>'
         f'<p>Get the full report on <b>{e(name)}</b> — enter your email and we\'ll '
         'email it to you within 24–48 hours. Free while in beta.</p>'
@@ -330,6 +385,8 @@ def dentist_page(rec, slug):
         '</div></div>'
     )
 
+    related = related_block(rec, slug, city_index, letter_buckets)
+
     body = (
         head(fr['title'], fr['desc'], canonical, ld)
         + '<main class="rp-wrap">'
@@ -340,13 +397,14 @@ def dentist_page(rec, slug):
         + f'<div class="rp-status {tclass}">'
           f'<p class="rp-line"><span class="rp-dot {color}"></span>{e(text)}</p>{sub}</div>'
         + ''.join(facts)
+        + extras
         + f'<a class="rp-verify" href="{FL_DOH_URL}" target="_blank" '
-          'rel="noopener noreferrer">See the official Florida state record ↗</a>'
+          'rel="noopener noreferrer">Look this up on the official Florida state portal ↗</a>'
         + f'<p class="rp-verify-note">On the state site, search the name: '
           f'<strong>{copy_hint}</strong>. Vetera is independent and shows public '
           'records only — always confirm on the official record that it is the '
           'right person.</p>'
-        + extras
+        + related
         + '<p class="rp-note">More than one person can share the same name. This '
           'page reflects Florida Department of Health public license data and shows '
           'facts only — no opinions, ratings, or recommendations. Think this is '
@@ -444,17 +502,27 @@ def main():
         seen.add(slug)
         slugs.append((rec, slug))
 
-    # Per-dentist pages
-    for rec, slug in slugs:
-        with open(os.path.join(D_DIR, slug + '.html'), 'w', encoding='utf-8') as f:
-            f.write(dentist_page(rec, slug))
-
-    # Directory buckets by last-name initial
+    # Directory buckets by last-name initial, and a city index — both built BEFORE
+    # the per-dentist pages so each page can link to related records (same city and
+    # same last-name initial). This turns ~30k orphan pages into a crawlable graph.
     buckets = {}
     for rec, slug in slugs:
         buckets.setdefault(letter_of(rec), []).append((rec, slug))
     for L in buckets:
         buckets[L].sort(key=lambda rs: (rs[0].get('l') or '', rs[0].get('f') or ''))
+
+    city_index = {}
+    for rec, slug in slugs:
+        c = (rec.get('c') or '').strip().lower()
+        if c:
+            city_index.setdefault(c, []).append((rec, slug))
+    for c in city_index:
+        city_index[c].sort(key=lambda rs: (rs[0].get('l') or '', rs[0].get('f') or ''))
+
+    # Per-dentist pages (with internal links to related records)
+    for rec, slug in slugs:
+        with open(os.path.join(D_DIR, slug + '.html'), 'w', encoding='utf-8') as f:
+            f.write(dentist_page(rec, slug, city_index, buckets))
 
     letters = [c for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if c in buckets]
     if '#' in buckets:

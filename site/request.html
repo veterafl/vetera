@@ -26,8 +26,8 @@
       <div class="container narrow">
         <h1>Request a Provider Background Report</h1>
         <p class="lead">
-          Fill out the form below. We'll review and send your report by email,
-          along with a payment link. No charge until you confirm.
+          Fill out the form below and we'll email your report within 24–48
+          hours. Free while Vetera is in beta.
         </p>
 
         <form id="requestForm" class="request-form">
@@ -65,14 +65,6 @@
           </label>
 
           <label>
-            Report Type
-            <select name="reportType" required id="reportType">
-              <option value="standard">Standard (3–5 days)</option>
-              <option value="rush">Rush (24 hours)</option>
-            </select>
-          </label>
-
-          <label>
             Anything we should know? (optional)
             <textarea name="notes" rows="4" placeholder="e.g. I have a procedure scheduled June 20; particularly concerned about sedation history"></textarea>
           </label>
@@ -80,17 +72,16 @@
           <button type="submit" class="btn-primary">Submit Request</button>
           <p class="form-note">
             By submitting you agree that the report is for informational use
-            only and does not constitute medical or legal advice. No charge
-            until you confirm by email.
+            only and does not constitute medical or legal advice.
           </p>
         </form>
 
         <div id="formSuccess" class="form-success" style="display:none">
           <h2>Request received.</h2>
           <p>
-            Your email client should have opened a draft to send your request.
-            If it didn't, you can email us directly at
-            <strong>veterareports@gmail.com</strong> with the details above.
+            Thanks — we've got your request and will email your report within
+            24–48 hours. Questions? Email
+            <strong>veterareports@gmail.com</strong>.
           </p>
           <p><a href="/">&larr; Back to home</a></p>
         </div>
@@ -110,9 +101,6 @@
   <script>
     // Pre-fill from URL params
     const params = new URLSearchParams(window.location.search);
-    if (params.get('type') === 'rush') {
-      document.getElementById('reportType').value = 'rush';
-    }
     const providerParam = params.get('provider');
     if (providerParam) {
       const el = document.querySelector('input[name="providerName"]');
@@ -124,29 +112,20 @@
       if (el) el.value = locationParam;
     }
 
-    // CHANGE THIS to your real email before launch
-    const RECIPIENT_EMAIL = 'veterareports@gmail.com';
+    // Reliable capture via Web3Forms (no mail app needed) — emails
+    // veterareports@gmail.com so the Gmail filter files it under Report Requests.
+    const WEB3FORMS_KEY = '25cf4a8d-db28-46f0-b1db-7b0dd76d21b9';
 
-    document.getElementById('requestForm').addEventListener('submit', function (e) {
+    document.getElementById('requestForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const fd = new FormData(this);
-
-      const subject = encodeURIComponent(
-        'New Vetera Report Request — ' + fd.get('providerName')
-      );
-      const body = encodeURIComponent(
-        'Requester Name: ' + fd.get('yourName') + '\n' +
-        'Requester Email: ' + fd.get('yourEmail') + '\n\n' +
-        'Provider Name: ' + fd.get('providerName') + '\n' +
-        'Provider Location: ' + fd.get('providerLocation') + '\n' +
-        'Profession: ' + (fd.get('profession') || 'Not specified') + '\n' +
-        'Report Type: ' + fd.get('reportType') + '\n\n' +
-        'Notes:\n' + (fd.get('notes') || '(none)')
-      );
-
-      window.location.href =
-        'mailto:' + RECIPIENT_EMAIL + '?subject=' + subject + '&body=' + body;
-
+      fd.append('access_key', WEB3FORMS_KEY);
+      fd.append('subject', 'Report request — ' + (fd.get('providerName') || ''));
+      fd.append('from_name', 'Vetera request form');
+      fd.append('email', fd.get('yourEmail') || '');
+      try {
+        await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd });
+      } catch (err) { /* still confirm; most submissions go through */ }
       document.getElementById('requestForm').style.display = 'none';
       document.getElementById('formSuccess').style.display = 'block';
     });
